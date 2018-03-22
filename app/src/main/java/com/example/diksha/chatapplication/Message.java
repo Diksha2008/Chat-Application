@@ -1,6 +1,7 @@
 package com.example.diksha.chatapplication;
 
 import android.graphics.Bitmap;
+import android.net.Uri;
 
 /**
  * A message entity
@@ -9,9 +10,9 @@ import android.graphics.Bitmap;
 public class Message {
     private String mMessage;
     private String mUsername;
-    private Bitmap mImage;
+    private Uri mImage;
 
-    public Message(String message, Bitmap image){
+    public Message(String message, Uri image){
         mMessage = message;
         mImage = image;
     }
@@ -24,5 +25,5 @@ public class Message {
         return  mUsername;
     }
 
-    public Bitmap getmImage() { return mImage; }
+    public Uri getmImage() { return mImage; }
 }

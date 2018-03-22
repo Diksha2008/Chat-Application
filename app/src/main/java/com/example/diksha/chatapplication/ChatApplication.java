@@ -12,19 +12,11 @@ import java.net.URISyntaxException;
  */
 
 public class ChatApplication extends Application {
-//    private Socket mSocket;
-//    {
-//        try {
-//            mSocket = IO.socket("http://192.168.0.101:3000");
-//        }catch (URISyntaxException e){
-//            throw new RuntimeException(e);
-//        }
-//    }
 
     private com.github.nkzawa.socketio.client.Socket mSocket;
     {
         try {
-            mSocket = IO.socket("http://192.168.1.4:3000");
+            mSocket = IO.socket("http://172.16.60.32:3000");
         }catch (URISyntaxException e) {}
     }
 

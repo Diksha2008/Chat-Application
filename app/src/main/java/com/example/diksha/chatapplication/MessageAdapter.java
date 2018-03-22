@@ -1,5 +1,7 @@
 package com.example.diksha.chatapplication;
 
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.support.v7.widget.RecyclerView;
 import android.text.Layout;
@@ -19,6 +21,7 @@ import java.util.List;
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHolder> {
 
     private List<Message> mMessages;
+    private Context mContext;
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         // each data item is just a string in this case
@@ -32,8 +35,9 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
         }
     }
 
-    public MessageAdapter(List<Message> myMessage) {
+    public MessageAdapter(List<Message> myMessage, Context context) {
         mMessages = myMessage;
+        mContext = context;
     }
 
 
@@ -46,12 +50,22 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        Message message = mMessages.get(position);
+        final Message message = mMessages.get(position);
         Boolean isImage = message.getmImage() != null;
         if (isImage){
             holder.mTextView.setVisibility(View.GONE);
             holder.mImageView.setVisibility(View.VISIBLE);
-            holder.mImageView.setImageBitmap(message.getmImage());
+            holder.mImageView.setImageURI(message.getmImage());
+            holder.mImageView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent intent = new Intent();
+                    intent.setAction(Intent.ACTION_VIEW);
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    intent.setDataAndType(message.getmImage(), "image/*");
+                    mContext.startActivity(intent);
+                }
+            });
         }
         else {
             holder.mTextView.setVisibility(View.VISIBLE);

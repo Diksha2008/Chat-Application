@@ -1,17 +1,31 @@
 package com.example.diksha.chatapplication;
 
+import android.Manifest;
+import android.app.Activity;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
+import android.os.Vibrator;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
@@ -33,6 +47,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -50,6 +66,7 @@ public class ChatFragment extends Fragment {
     private boolean mTyping = false;
     private Handler mMessageHandler = new Handler();
     private static final int RC_PHOTO_PICKER = 2;
+    private static final int MY_PERMISSION_REQUEST_READ_EXTERNAL_STORAGE = 123;
     private static final String TAG = "ChatFragment";
 
 
@@ -105,7 +122,7 @@ public class ChatFragment extends Fragment {
         mMessageView = (RecyclerView) view.findViewById(R.id.messages);
         mStatus = (TextView) view.findViewById(R.id.status);
 
-        mAdapter = new MessageAdapter(mMessages);
+        mAdapter = new MessageAdapter(mMessages, getContext());
         mMessageView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mMessageView.setAdapter(mAdapter);
 
@@ -137,7 +154,10 @@ public class ChatFragment extends Fragment {
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                attemptSend();
+                String message = mEditText.getText().toString().trim();
+                insertMessage(message);
+                mEditText.setText("");
+                mSocket.emit("new message", message);
             }
         });
 
@@ -191,25 +211,55 @@ public class ChatFragment extends Fragment {
         return BitmapFactory.decodeByteArray(b, 0, b.length);
     }
 
-    //insert message in current user's field
-    private void  attemptSend(){
-        String message = mEditText.getText().toString().trim();
-        mEditText.setText("");
-        mSocket.emit("new message", message);
-    }
-
     private void insertMessage(String message){
         mMessages.add(new Message(message, null));
         mAdapter.notifyItemInserted(mMessages.size() - 1);
         scrollToBottom();
     }
 
-    private void insertImage(Bitmap image){
+    private void insertImage(Uri image){
         mMessages.add(new Message(null,image));
         mAdapter.notifyItemInserted(mMessages.size() - 1);
         scrollToBottom();
-
     }
+
+    private Uri saveImage(Bitmap image){
+        File directory = getContext().getFilesDir();
+
+        File path = new File(directory, "diksha.jpg");
+        Log.d(TAG, "saveImage: " + path);
+        try {
+            FileOutputStream out = new FileOutputStream(path);
+            image.compress(Bitmap.CompressFormat.JPEG, 100, out);
+            out.close();
+           // MediaStore.Images.Media.insertImage(getContext().getContentResolver(),path.getAbsolutePath(),file.getName(),file.getName());
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+//        ContextWrapper cw = new ContextWrapper(getContext().getApplicationContext());
+//        File directory = cw.getDir("photos", Context.MODE_PRIVATE);
+//        File path = new File(directory, "diksha.jpg");
+//        FileOutputStream out = null;
+//        try{
+//            out = new FileOutputStream(path);
+//            image.compress(Bitmap.CompressFormat.JPEG, 100, out);
+//        }catch (Exception e){
+//            e.printStackTrace();
+//        }finally {
+//            try {
+//                out.close();
+//            }catch (IOException e){
+//                e.printStackTrace();
+//            }
+//        }
+//        Log.d(TAG, "saveImage: " + directory.getAbsolutePath());
+//        if(checkPermissionREAD_EXTERNAL_STORAGE(getContext())) {
+//            showInGallery(path);
+//        }
+        return FileProvider.getUriForFile(getContext(),getContext().getPackageName() + ".fileprovider", path);
+    }
+
+
 
     private void scrollToBottom(){
         mMessageView.scrollToPosition(mMessages.size() - 1);
@@ -226,13 +276,35 @@ public class ChatFragment extends Fragment {
         }
     };
 
+    public void vibrate() {
+        //get the instance of the vibrator
+        Vibrator v = (Vibrator)getActivity().getSystemService(Context.VIBRATOR_SERVICE);
+        // Vibrate for 400 milliseconds
+        v.vibrate(400);
+    }
+
+    public void playBeep() {
+        try {
+            Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+            Ringtone r = RingtoneManager.getRingtone(getActivity().getApplicationContext(), notification);
+            r.play();
+            //Log.i(TAG,"inside here");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /* Listeners */
+
     private Emitter.Listener OnConnectError = new Emitter.Listener() {
         @Override
-        public void call(Object... args) {
+        public void call(final Object... args) {
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     Toast.makeText(getActivity(), "Error", Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, "Connection error: " + args[0], new Exception());
+
                 }
             });
         }
@@ -247,6 +319,8 @@ public class ChatFragment extends Fragment {
                     //TODO: insert message in the room where username is not equal to the person who emitted the message
                     String message = (String) args[0];
                     insertMessage(message);
+                    playBeep();
+                    vibrate();
                 }
             });
         }
@@ -263,7 +337,9 @@ public class ChatFragment extends Fragment {
                     try {
                         selectedImage = image.getString("image");
                         Bitmap bitmap = decodeImage(selectedImage);
-                        insertImage(bitmap);
+                        Log.e(TAG, "run: " + selectedImage, new Exception() );
+                        Uri uri = saveImage(bitmap);
+                        insertImage(uri);
                     }catch (JSONException e){ }
                 }
             });
@@ -277,9 +353,6 @@ public class ChatFragment extends Fragment {
                 @Override
                 public void run() {
                     //TODO:show typing only to the other user in ther room where username is not equal to the person who emitted the message
-//                    mMessages.add(new Message("typing..."));
-//                    mAdapter.notifyItemInserted(mMessages.size() - 1);
-
                     mStatus.setText("Typing...");
                 }
             });
