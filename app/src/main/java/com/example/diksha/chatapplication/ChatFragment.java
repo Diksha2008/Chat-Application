@@ -53,6 +53,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 
 public class ChatFragment extends Fragment {
@@ -225,14 +226,15 @@ public class ChatFragment extends Fragment {
 
     private Uri saveImage(Bitmap image){
         File directory = getContext().getFilesDir();
-
-        File path = new File(directory, "diksha.jpg");
+        String id = UUID.randomUUID().toString();
+        File path = new File(directory, id + ".jpg");
         Log.d(TAG, "saveImage: " + path);
         try {
             FileOutputStream out = new FileOutputStream(path);
             image.compress(Bitmap.CompressFormat.JPEG, 100, out);
             out.close();
            // MediaStore.Images.Media.insertImage(getContext().getContentResolver(),path.getAbsolutePath(),file.getName(),file.getName());
+            // MediaStore.Images.Media.insertImage(getContext().getContentResolver(), image, "image" , "diksha");
         }catch (Exception e) {
             e.printStackTrace();
         }
@@ -337,7 +339,6 @@ public class ChatFragment extends Fragment {
                     try {
                         selectedImage = image.getString("image");
                         Bitmap bitmap = decodeImage(selectedImage);
-                        Log.e(TAG, "run: " + selectedImage, new Exception() );
                         Uri uri = saveImage(bitmap);
                         insertImage(uri);
                     }catch (JSONException e){ }

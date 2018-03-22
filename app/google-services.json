@@ -1,0 +1,174 @@
+{
+  "project_info": {
+    "project_number": "616148625193",
+    "firebase_url": "https://acms-f6b50.firebaseio.com",
+    "project_id": "acms-f6b50",
+    "storage_bucket": "acms-f6b50.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:616148625193:android:9fca30b42f962db2",
+        "android_client_info": {
+          "package_name": "com.example.smriti.acms"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "616148625193-cg27ptnj9halbv7agbrduf31qdb4vbhn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.smriti.acms",
+            "certificate_hash": "af142f99fd4a9c4ac6b4c9313fe1465b9aa9623b"
+          }
+        },
+        {
+          "client_id": "616148625193-lqqtlqlb0dg7hhuo37lucg0mvgopib0h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBhLR6lJBhRzrweCkZPQs0bORpPTTPhVSI"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "616148625193-lqqtlqlb0dg7hhuo37lucg0mvgopib0h.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:616148625193:android:9faa79ea691177a2",
+        "android_client_info": {
+          "package_name": "com.example.smriti.acms2"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "616148625193-dlasr66jvl2qq9m5j36tf6nkvfpd18cc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.smriti.acms2",
+            "certificate_hash": "af142f99fd4a9c4ac6b4c9313fe1465b9aa9623b"
+          }
+        },
+        {
+          "client_id": "616148625193-lqqtlqlb0dg7hhuo37lucg0mvgopib0h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBhLR6lJBhRzrweCkZPQs0bORpPTTPhVSI"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "616148625193-lqqtlqlb0dg7hhuo37lucg0mvgopib0h.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:616148625193:android:749e9b985dba6a2f",
+        "android_client_info": {
+          "package_name": "com.example.meghabajaj.acms"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "616148625193-lqqtlqlb0dg7hhuo37lucg0mvgopib0h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBhLR6lJBhRzrweCkZPQs0bORpPTTPhVSI"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:616148625193:android:b483bb8bfc24e880",
+        "android_client_info": {
+          "package_name": "com.example.diksha.chatapplication"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "616148625193-8jtjlkjvoav3ik95aph7he8uk57pj1ta.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.diksha.chatapplication",
+            "certificate_hash": "f64da6aaf7bc92ebd8e251a82bf093db061027cf"
+          }
+        },
+        {
+          "client_id": "616148625193-lqqtlqlb0dg7hhuo37lucg0mvgopib0h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBhLR6lJBhRzrweCkZPQs0bORpPTTPhVSI"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "616148625193-lqqtlqlb0dg7hhuo37lucg0mvgopib0h.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
