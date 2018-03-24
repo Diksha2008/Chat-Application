@@ -20,7 +20,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.github.nkzawa.emitter.Emitter;
+import com.github.nkzawa.socketio.client.Socket;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseException;
@@ -368,18 +371,13 @@ public class LoginActivity extends AppCompatActivity  implements
         } else {
             // Signed in
             mPhoneNumberViews.setVisibility(View.GONE);
-            /*
-            mSignedInViews.setVisibility(View.VISIBLE);
-            enableViews(mPhoneNumberField, mVerificationField);
-            mPhoneNumberField.setText(null);
-            mVerificationField.setText(null);
-            mStatusText.setText(R.string.signed_in);
-            mDetailText.setText(getString(R.string.firebase_status_fmt, user.getUid()));
-            */
+            ChatApplication app = (ChatApplication) LoginActivity.this.getApplication();
+            Socket mSocket = app.getSocket();
+            mSocket.on(Socket.EVENT_CONNECT,OnConnect);
+            mSocket.connect();
             Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);
             finish();
-
         }
     }
 
@@ -446,6 +444,19 @@ public class LoginActivity extends AppCompatActivity  implements
                 break;
         }
     }
+
+    private Emitter.Listener OnConnect = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            LoginActivity.this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(LoginActivity.this, "Connected", Toast.LENGTH_SHORT).show();
+
+                }
+            });
+        }
+    };
 
 
 }

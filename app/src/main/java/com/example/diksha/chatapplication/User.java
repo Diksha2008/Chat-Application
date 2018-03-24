@@ -5,14 +5,13 @@ package com.example.diksha.chatapplication;
  */
 
 public class User {
-    private String mPhoneNo;
-    private String mUsername;
+    private String mUserId;
 
-    public String getPhoneNo(){
-        return mPhoneNo;
+    public User(String userId){
+        mUserId = userId;
+    }
+    public String getUserId(){
+        return mUserId;
     }
 
-    public String getUsername(){
-        return mUsername;
-    }
 }

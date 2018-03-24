@@ -9,7 +9,7 @@ import android.net.Uri;
 
 public class Message {
     private String mMessage;
-    private String mUsername;
+    private String mTo;
     private Uri mImage;
 
     public Message(String message, Uri image){
@@ -21,8 +21,8 @@ public class Message {
         return mMessage;
     }
 
-    public String getUsername(){
-        return  mUsername;
+    public String getTo(){
+        return  mTo;
     }
 
     public Uri getmImage() { return mImage; }
