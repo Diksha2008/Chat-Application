@@ -52,6 +52,9 @@ public class LoginActivity extends AppCompatActivity  implements
     private static final int STATE_SIGNIN_FAILED = 5;
     private static final int STATE_SIGNIN_SUCCESS = 6;
 
+    private  Socket mSocket;
+    private ChatApplication app;
+
     // [START declare_auth]
     private FirebaseAuth mAuth;
     // [END declare_auth]
@@ -371,8 +374,8 @@ public class LoginActivity extends AppCompatActivity  implements
         } else {
             // Signed in
             mPhoneNumberViews.setVisibility(View.GONE);
-            ChatApplication app = (ChatApplication) LoginActivity.this.getApplication();
-            Socket mSocket = app.getSocket();
+            app = (ChatApplication) LoginActivity.this.getApplication();
+            mSocket = app.getSocket();
             mSocket.on(Socket.EVENT_CONNECT,OnConnect);
             mSocket.connect();
             Intent intent = new Intent(this, MainActivity.class);
@@ -452,7 +455,7 @@ public class LoginActivity extends AppCompatActivity  implements
                 @Override
                 public void run() {
                     Toast.makeText(LoginActivity.this, "Connected", Toast.LENGTH_SHORT).show();
-
+                    mSocket.emit("online", app.getCurrentUser().getPhoneNumber());
                 }
             });
         }

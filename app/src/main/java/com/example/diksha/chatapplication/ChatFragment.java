@@ -137,7 +137,7 @@ public class ChatFragment extends Fragment {
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 if (!mTyping) {
                     mTyping = true;
-                    mSocket.emit("typing");
+                    mSocket.emit("typing", createBaseJSONObject());
                 }
 
                 mMessageHandler.removeCallbacks(OnTypingTimeout);
@@ -157,10 +157,8 @@ public class ChatFragment extends Fragment {
                 String message = mEditText.getText().toString().trim();
                 insertMessage(message);
                 mEditText.setText("");
-                JSONObject messageData = new JSONObject();
+                JSONObject messageData = createBaseJSONObject();
                 try {
-                    messageData.put("fromUser", mCurrentUser.getPhoneNumber());
-                    messageData.put("toUser", mToUser);
                     messageData.put("messageText", message);
                 }catch (JSONException e){ }
                 mSocket.emit("new message", messageData);
@@ -186,7 +184,7 @@ public class ChatFragment extends Fragment {
         //TODO: first check if user is signed in
         if (requestCode == RC_PHOTO_PICKER) {
             Uri selectedImageUri = data.getData();
-            JSONObject sendImage = new JSONObject();
+            JSONObject sendImage = createBaseJSONObject();
             try {
                 sendImage.put("image", encodeImage(selectedImageUri));
                 mSocket.emit("image", sendImage);
@@ -289,6 +287,16 @@ public class ChatFragment extends Fragment {
         }
     }
 
+    public JSONObject createBaseJSONObject(){
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("person1", mToUser);
+            jsonObject.put("person2", mCurrentUser.getPhoneNumber());
+
+        }catch (JSONException e){ }
+        return jsonObject;
+    }
+
     /* Listeners */
 
     private Emitter.Listener OnConnectError = new Emitter.Listener() {
@@ -372,7 +380,7 @@ public class ChatFragment extends Fragment {
             if (!mTyping) return;
 
             mTyping = false;
-            mSocket.emit("stop typing");
+            mSocket.emit("stop typing",createBaseJSONObject());
         }
     };
 
