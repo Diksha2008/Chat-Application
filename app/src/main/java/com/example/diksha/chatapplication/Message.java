@@ -9,21 +9,24 @@ import android.net.Uri;
 
 public class Message {
     private String mMessage;
-    private String mTo;
+    private Boolean mIsReceived;
     private Uri mImage;
+    private String mCreatedAt;
 
-    public Message(String message, Uri image){
+    public Message(String message, Uri image, Boolean isReceived, String createdAt){
         mMessage = message;
         mImage = image;
+        mIsReceived = isReceived;
+        mCreatedAt = createdAt;
     }
 
     public String getMessage(){
         return mMessage;
     }
 
-    public String getTo(){
-        return  mTo;
-    }
-
     public Uri getmImage() { return mImage; }
+
+    public Boolean isReceived() { return mIsReceived;}
+
+    public String createdAt() { return  mCreatedAt; }
 }

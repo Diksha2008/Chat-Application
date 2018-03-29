@@ -67,10 +67,11 @@ public class UserListFragment extends android.support.v4.app.Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        //Set title bar
+        ((MainActivity)getActivity()).setActionBarTitle("Users");
         mUserAdapter = new UserAdapter(mUserList, getActivity());
-//        mUserList.add(new User(mCurrentUser.getPhoneNumber()));
-//        mUserList.add(new User(mCurrentUser.getPhoneNumber()));
-//        mUserList.add(new User(mCurrentUser.getUid()));
+
 
 
         mUserListView = (RecyclerView) view.findViewById(R.id.userList);
@@ -112,8 +113,7 @@ public class UserListFragment extends android.support.v4.app.Fragment {
         try {
             data.put("uid", mCurrentUser.getUid());
             data.put("phone", mCurrentUser.getPhoneNumber());
-        } catch (JSONException e) {
-        }
+        } catch (JSONException e) { }
         mSocket.emit("login", data);
     }
 }

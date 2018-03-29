@@ -45,8 +45,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 
@@ -117,6 +121,7 @@ public class ChatFragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
         mMessageView = (RecyclerView) view.findViewById(R.id.messages);
         mStatus = (TextView) view.findViewById(R.id.status);
 
@@ -125,6 +130,9 @@ public class ChatFragment extends Fragment {
         mMessageView.setAdapter(mAdapter);
 
         mToUser = getArguments().getString("toUser");
+
+        //Set title bar
+        ((MainActivity)getActivity()).setActionBarTitle(mToUser);
 
         mEditText = (EditText) view.findViewById(R.id.message_input);
         mEditText.addTextChangedListener(new TextWatcher() {
@@ -155,11 +163,14 @@ public class ChatFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 String message = mEditText.getText().toString().trim();
-                insertMessage(message);
+                String time = getCurrentTime();
+                Log.d(TAG, "onClick: " + time);
+                insertMessage(message, false, time);
                 mEditText.setText("");
                 JSONObject messageData = createBaseJSONObject();
                 try {
                     messageData.put("messageText", message);
+                    messageData.put("time", time);
                 }catch (JSONException e){ }
                 mSocket.emit("new message", messageData);
             }
@@ -185,11 +196,14 @@ public class ChatFragment extends Fragment {
         if (requestCode == RC_PHOTO_PICKER) {
             Uri selectedImageUri = data.getData();
             JSONObject sendImage = createBaseJSONObject();
+            String time = getCurrentTime();
             try {
+                sendImage.put("time", time);
                 sendImage.put("image", encodeImage(selectedImageUri));
                 mSocket.emit("image", sendImage);
             } catch (JSONException e) {
             }
+            insertImage(selectedImageUri, false, time);
         } else {
             Log.e(TAG, "onActivityResult: ", new Exception());
         }
@@ -215,14 +229,14 @@ public class ChatFragment extends Fragment {
         return BitmapFactory.decodeByteArray(b, 0, b.length);
     }
 
-    private void insertMessage(String message) {
-        mMessages.add(new Message(message, null));
+    private void insertMessage(String message, Boolean isReceived, String time) {
+        mMessages.add(new Message(message, null, isReceived, time));
         mAdapter.notifyItemInserted(mMessages.size() - 1);
         scrollToBottom();
     }
 
-    private void insertImage(Uri image) {
-        mMessages.add(new Message(null, image));
+    private void insertImage(Uri image, Boolean isReceived, String time) {
+        mMessages.add(new Message(null, image, isReceived, time));
         mAdapter.notifyItemInserted(mMessages.size() - 1);
         scrollToBottom();
     }
@@ -297,6 +311,15 @@ public class ChatFragment extends Fragment {
         return jsonObject;
     }
 
+    public String getCurrentTime(){
+        Calendar calendar = Calendar.getInstance();
+        Date date = calendar.getTime();
+        //SimpleDateFormat simpleDateFormat = new SimpleDateFormat("hh:mm", Locale.ENGLISH);
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.ENGLISH);
+        String messageCreatedAt = dateFormat.format(date);
+        return messageCreatedAt;
+    }
+
     /* Listeners */
 
     private Emitter.Listener OnConnectError = new Emitter.Listener() {
@@ -320,8 +343,19 @@ public class ChatFragment extends Fragment {
                 @Override
                 public void run() {
                     //TODO: insert message in the room where username is not equal to the person who emitted the message
-                    String message = (String) args[0];
-                    insertMessage(message);
+                    JSONObject message = (JSONObject) args[0];
+                    try{
+                        String messageText = message.getString("messageText");
+                        String time = message.getString("time");
+                        String person = message.getString("person1");
+                        if(person.equals(mCurrentUser.getPhoneNumber())){
+                            insertMessage(messageText, true, time);
+                        }
+                        else {
+                            insertMessage(messageText, false, time);
+                        }
+
+                    }catch (JSONException e){ }
                     playBeep();
                     vibrate();
                 }
@@ -341,7 +375,15 @@ public class ChatFragment extends Fragment {
                         selectedImage = image.getString("image");
                         Bitmap bitmap = decodeImage(selectedImage);
                         Uri uri = saveImage(bitmap);
-                        insertImage(uri);
+                        String time = image.getString("time");
+                        String person = image.getString("person1");
+                        //Log.d(TAG, "run: " + person + " " + mCurrentUser.getPhoneNumber());
+                        if(person.equals(mCurrentUser.getPhoneNumber())){
+                            insertImage(uri, true, time);
+                        }
+                        else {
+                            insertImage(uri, false, time);
+                        }
                     } catch (JSONException e) {
                     }
                 }
@@ -356,6 +398,7 @@ public class ChatFragment extends Fragment {
                 @Override
                 public void run() {
                     //TODO:show typing only to the other user in ther room where username is not equal to the person who emitted the message
+                    mStatus.setVisibility(View.VISIBLE);
                     mStatus.setText("Typing...");
                 }
             });
@@ -369,6 +412,7 @@ public class ChatFragment extends Fragment {
                 @Override
                 public void run() {
                     mStatus.setText("");
+                    mStatus.setVisibility(View.GONE);
                 }
             });
         }
