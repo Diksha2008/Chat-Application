@@ -38,6 +38,9 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
     private Context mContext;
     private String mCurrentUser;
 
+    private RelativeLayout.LayoutParams messageParams;
+    private RelativeLayout.LayoutParams timeViewParams;
+
     public static class ViewHolder extends RecyclerView.ViewHolder {
         // each data item is just a string in this case
         public TextView mTextView;
@@ -68,10 +71,9 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
 
-        RelativeLayout.LayoutParams messageTextParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        messageTextParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+        messageParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
 
-        RelativeLayout.LayoutParams timeViewParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        timeViewParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
 
         final Message message = mMessages.get(position);
 
@@ -93,14 +95,12 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
 
             //aligning the message
             if(!message.isReceived()){
-                alignTimeView(timeViewParams, holder.mTimeView,R.id.image);
-                holder.mImageView.setLayoutParams(messageTextParams);
-                holder.mImageView.setBackgroundResource(R.drawable.rounded_purple_rectangle);
+                alignTimeView(holder.mTimeView,RelativeLayout.LEFT_OF, R.id.image);
+                alignMessageView(holder.mImageView, false, R.drawable.rounded_purple_rectangle, RelativeLayout.ALIGN_PARENT_RIGHT, Color.WHITE);
             }
             else {
-                timeViewParams.addRule(RelativeLayout.RIGHT_OF,R.id.image);
-                timeViewParams.addRule(RelativeLayout.ALIGN_BOTTOM,R.id.image);
-                holder.mTimeView.setLayoutParams(timeViewParams);
+                alignTimeView(holder.mTimeView, RelativeLayout.RIGHT_OF, R.id.image);
+                alignMessageView(holder.mImageView, false, R.drawable.rounded_grey_rectangle, RelativeLayout.ALIGN_PARENT_LEFT, Color.BLACK);
             }
 
             holder.mImageView.setOnClickListener(new View.OnClickListener() {
@@ -121,18 +121,33 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
 
             // aligning the message
             if(!message.isReceived()){
-                alignTimeView(timeViewParams, holder.mTimeView,R.id.msg);
-                holder.mTextView.setLayoutParams(messageTextParams);
-                holder.mTextView.setBackgroundResource(R.drawable.rounded_purple_rectangle);
-                holder.mTextView.setTextColor(Color.WHITE);
+                alignTimeView(holder.mTimeView,RelativeLayout.LEFT_OF, R.id.msg);
+                alignMessageView(holder.mTextView, true, R.drawable.rounded_purple_rectangle, RelativeLayout.ALIGN_PARENT_RIGHT, Color.WHITE);
+            }
+            else {
+                alignTimeView(holder.mTimeView, RelativeLayout.RIGHT_OF, R.id.msg);
+                alignMessageView(holder.mTextView, true, R.drawable.rounded_grey_rectangle, RelativeLayout.ALIGN_PARENT_LEFT, Color.BLACK);
             }
         }
     }
-    public void alignTimeView(RelativeLayout.LayoutParams timeViewParams, TextView timeView, int id){
-        timeViewParams.addRule(RelativeLayout.LEFT_OF,id);
-        timeViewParams.addRule(RelativeLayout.ALIGN_BOTTOM,id);
+
+    public void alignTimeView(TextView timeView, int alignment, int id){
+        timeViewParams.addRule(alignment, id);
+        timeViewParams.addRule(RelativeLayout.ALIGN_BOTTOM, id);
         timeView.setLayoutParams(timeViewParams);
     }
+
+
+    public void alignMessageView(View messageView, Boolean isText, int backgroundResource, int alignment, int textColor){
+        messageParams.addRule(alignment);
+        messageView.setLayoutParams(messageParams);
+        messageView.setBackgroundResource(backgroundResource);
+        if(isText) {
+            ((TextView)messageView).setTextColor(textColor);
+        }
+    }
+
+
 
     @Override
     public int getItemCount() {

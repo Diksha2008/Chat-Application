@@ -29,4 +29,6 @@ public class Message {
     public Boolean isReceived() { return mIsReceived;}
 
     public String createdAt() { return  mCreatedAt; }
+
+
 }

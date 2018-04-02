@@ -89,8 +89,6 @@ public class ChatFragment extends Fragment {
         mSocket.on("image", OnNewImage);
         mSocket.on("typing", OnTyping);
         mSocket.on("stop typing", OnStopTyping);
-        mSocket.connect();
-
     }
 
     @Override
@@ -115,7 +113,6 @@ public class ChatFragment extends Fragment {
         mSocket.off("image", OnNewImage);
         mSocket.off("typing", OnTyping);
         mSocket.off("stop typing", OnStopTyping);
-        mSocket.disconnect();
     }
 
     @Override
@@ -348,6 +345,7 @@ public class ChatFragment extends Fragment {
                         String messageText = message.getString("messageText");
                         String time = message.getString("time");
                         String person = message.getString("person1");
+                        Log.d(TAG, "run: " + messageText);
                         if(person.equals(mCurrentUser.getPhoneNumber())){
                             insertMessage(messageText, true, time);
                         }
@@ -356,8 +354,8 @@ public class ChatFragment extends Fragment {
                         }
 
                     }catch (JSONException e){ }
-                    playBeep();
-                    vibrate();
+                    //playBeep();
+                    //vibrate();
                 }
             });
         }
