@@ -92,7 +92,6 @@ public class UserListFragment extends android.support.v4.app.Fragment {
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    Log.e(TAG, "run: " + args[0], new Exception());
                     JSONArray result = (JSONArray) args[0];
                     for (int i = 0; i < result.length(); i++) {
                         try {

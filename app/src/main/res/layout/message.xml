@@ -32,7 +32,6 @@
         android:layout_alignBottom="@id/msg"
         android:layout_gravity="bottom"
         android:layout_toRightOf="@id/msg"
-        android:text="12:45"
         android:textSize="12sp" />
 
 </RelativeLayout>

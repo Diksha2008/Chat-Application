@@ -78,12 +78,14 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
         final Message message = mMessages.get(position);
 
         //set time view
-        SimpleDateFormat input = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.ENGLISH);
+        SimpleDateFormat input = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
         SimpleDateFormat output = new SimpleDateFormat("hh:mm", Locale.ENGLISH);
         try {
             Date date = input.parse(message.createdAt());
             holder.mTimeView.setText(output.format(date));
-        }catch (ParseException e){ }
+        }catch (ParseException e){
+            Log.d(TAG, "displayTime: Could not parse" );
+        }
 
 
         //set message view

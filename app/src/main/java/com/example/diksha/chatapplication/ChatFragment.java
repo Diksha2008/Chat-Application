@@ -16,7 +16,9 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -31,12 +33,14 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.Manifest;
 
 import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.Socket;
 import com.google.firebase.auth.FirebaseUser;
 
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -45,12 +49,15 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import java.lang.reflect.Array;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 import java.util.UUID;
 
 
@@ -66,8 +73,10 @@ public class ChatFragment extends Fragment {
     private Handler mMessageHandler = new Handler();
     private  FirebaseUser mCurrentUser;
     private  String mToUser;
+    private InfiniteRecyclerViewScrollListener scrollListener;
     private static final int RC_PHOTO_PICKER = 2;
     private static final int REQUEST_PERMISSION = 1;
+    private static final int MAX_MESSAGES_PER_REQUEST = 10;
     private static final String TAG = "ChatFragment";
 
 
@@ -89,6 +98,7 @@ public class ChatFragment extends Fragment {
         mSocket.on("image", OnNewImage);
         mSocket.on("typing", OnTyping);
         mSocket.on("stop typing", OnStopTyping);
+        mSocket.on("get messages", OnGetMessages);
     }
 
     @Override
@@ -130,6 +140,18 @@ public class ChatFragment extends Fragment {
 
         //Set title bar
         ((MainActivity)getActivity()).setActionBarTitle(mToUser);
+
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
+        mMessageView.setLayoutManager(linearLayoutManager);
+
+        scrollListener = new InfiniteRecyclerViewScrollListener(linearLayoutManager) {
+            @Override
+            public void onLoadMore(int page, int totalItemCount, RecyclerView view) {
+                loadNextData(page);
+            }
+        };
+
+        mMessageView.addOnScrollListener(scrollListener);
 
         mEditText = (EditText) view.findViewById(R.id.message_input);
         mEditText.addTextChangedListener(new TextWatcher() {
@@ -247,17 +269,17 @@ public class ChatFragment extends Fragment {
             FileOutputStream out = new FileOutputStream(path);
             image.compress(Bitmap.CompressFormat.JPEG, 100, out);
             out.close();
-            // MediaStore.Images.Media.insertImage(getContext().getContentResolver(),path.getAbsolutePath(),file.getName(),file.getName());
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
-//                    && ContextCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-//                ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-//                        REQUEST_PERMISSION);
-//            }
-//            else {
-//                Log.i(TAG, "saveImage: " + getContext().getExternalFilesDir(null) );
+//             MediaStore.Images.Media.insertImage(getContext().getContentResolver(),path.getAbsolutePath(),file.getName(),file.getName());
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+                    && ContextCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        REQUEST_PERMISSION);
+            }
+            else {
+                Log.i(TAG, "saveImage: " + getContext().getExternalFilesDir(null) );
 //                MediaStore.Images.Media.insertImage(getContext().getContentResolver(), image, "image", "diksha");
-//                //MediaStore.Images.Media.insertImage(getContext().getContentResolver(),path.getAbsolutePath(),path.getName(),path.getName());
-//            }
+               MediaStore.Images.Media.insertImage(getContext().getContentResolver(),path.getAbsolutePath(),path.getName(),path.getName());
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -312,9 +334,20 @@ public class ChatFragment extends Fragment {
         Calendar calendar = Calendar.getInstance();
         Date date = calendar.getTime();
         //SimpleDateFormat simpleDateFormat = new SimpleDateFormat("hh:mm", Locale.ENGLISH);
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.ENGLISH);
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
         String messageCreatedAt = dateFormat.format(date);
         return messageCreatedAt;
+    }
+
+    public void loadNextData(int offset){
+        JSONObject data = createBaseJSONObject();
+        try {
+            data.put("offset",offset );
+            data.put("maxMessages", MAX_MESSAGES_PER_REQUEST);
+        }catch (JSONException e){ }
+        mSocket.emit("get messages", data);
+        Log.d(TAG, "run: " + offset);
+
     }
 
     /* Listeners */
@@ -345,7 +378,6 @@ public class ChatFragment extends Fragment {
                         String messageText = message.getString("messageText");
                         String time = message.getString("time");
                         String person = message.getString("person1");
-                        Log.d(TAG, "run: " + messageText);
                         if(person.equals(mCurrentUser.getPhoneNumber())){
                             insertMessage(messageText, true, time);
                         }
@@ -375,7 +407,6 @@ public class ChatFragment extends Fragment {
                         Uri uri = saveImage(bitmap);
                         String time = image.getString("time");
                         String person = image.getString("person1");
-                        //Log.d(TAG, "run: " + person + " " + mCurrentUser.getPhoneNumber());
                         if(person.equals(mCurrentUser.getPhoneNumber())){
                             insertImage(uri, true, time);
                         }
@@ -411,6 +442,45 @@ public class ChatFragment extends Fragment {
                 public void run() {
                     mStatus.setText("");
                     mStatus.setVisibility(View.GONE);
+                }
+            });
+        }
+    };
+
+    private  Emitter.Listener OnGetMessages = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    JSONArray data = (JSONArray) args[0];
+                    Log.d(TAG, "length: " + data.length());
+                    if (data.length() == 0){
+                        mMessageView.removeOnScrollListener(scrollListener);
+                    }
+                    try {
+                        //TODO: handle image
+                        for (int i = 0; i < data.length(); i++) {
+                            JSONObject message = (JSONObject) data.get(i);
+                            String messageText = message.getString("messageText");
+                            String time = message.getString("time");
+                            time = time.replaceAll("[TZ]"," ");
+                            String person = message.getString("toId");
+                            if(person.equals(mCurrentUser.getPhoneNumber())){
+                                mMessages.add(0, new Message(messageText, null, true, time));
+                            }
+                            else {
+                                mMessages.add(0, new Message(messageText, null, false, time));
+                            }
+                            mAdapter.notifyItemInserted(0);
+                        }
+                    }catch (JSONException e) {
+                        Log.d(TAG, "could not parse ");
+                    }
+                    //when data is loaded for the first time
+                    if (data.length() > 1){
+                        scrollToBottom();
+                    }
                 }
             });
         }
