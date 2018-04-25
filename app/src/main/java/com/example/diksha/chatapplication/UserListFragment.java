@@ -50,12 +50,19 @@ public class UserListFragment extends android.support.v4.app.Fragment {
 
         ChatApplication app = (ChatApplication) getActivity().getApplication();
         mSocket = app.getSocket();
+        mSocket.on("get users", OnGetUsers);
 
         mCurrentUser = app.getCurrentUser();
 
-        mSocket.emit("get users");
+        JSONObject userData = new JSONObject();
+        try {
+            userData.put("phone", mCurrentUser.getPhoneNumber());
+        } catch (JSONException e) {
+            Log.e(TAG, "onCreate: " + e);
+        }
 
-        mSocket.on("get users", OnGetUsers);
+        mSocket.emit("get users", userData);
+
     }
 
     @Nullable

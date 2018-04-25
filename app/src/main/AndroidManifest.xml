@@ -39,6 +39,7 @@
         <activity
             android:name=".CategoryActivity"
             android:label="@string/title_activity_category"
+            android:noHistory="true"
             android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
