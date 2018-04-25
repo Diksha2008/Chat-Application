@@ -31,6 +31,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.Manifest;
@@ -68,15 +69,18 @@ public class ChatFragment extends Fragment {
     private RecyclerView.Adapter mAdapter;
     private EditText mEditText;
     private TextView mStatus;
+    private ProgressBar mLoading;
     private List<Message> mMessages = new ArrayList<Message>();
     private boolean mTyping = false;
     private Handler mMessageHandler = new Handler();
-    private  FirebaseUser mCurrentUser;
-    private  String mToUser;
+    private FirebaseUser mCurrentUser;
+    private String mToUser;
     private InfiniteRecyclerViewScrollListener scrollListener;
     private static final int RC_PHOTO_PICKER = 2;
     private static final int REQUEST_PERMISSION = 1;
     private static final int MAX_MESSAGES_PER_REQUEST = 10;
+    private static final int TEXT_MESSAGE = 8;
+    private static final int IMAGE_MESSAGE = 9;
     private static final String TAG = "ChatFragment";
 
 
@@ -90,7 +94,7 @@ public class ChatFragment extends Fragment {
         super.onCreate(savedInstanceState);
         ChatApplication app = (ChatApplication) getActivity().getApplication();
         mSocket = app.getSocket();
-       // mSocket.on(Socket.EVENT_CONNECT, OnConnect);
+        // mSocket.on(Socket.EVENT_CONNECT, OnConnect);
 
         mCurrentUser = app.getCurrentUser();
         mSocket.on(Socket.EVENT_CONNECT_ERROR, OnConnectError);
@@ -117,7 +121,7 @@ public class ChatFragment extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-       // mSocket.off(Socket.EVENT_CONNECT, OnConnect);
+        // mSocket.off(Socket.EVENT_CONNECT, OnConnect);
         mSocket.off(Socket.EVENT_CONNECT_ERROR, OnConnectError);
         mSocket.off("new message", OnNewMessage);
         mSocket.off("image", OnNewImage);
@@ -131,6 +135,8 @@ public class ChatFragment extends Fragment {
 
         mMessageView = (RecyclerView) view.findViewById(R.id.messages);
         mStatus = (TextView) view.findViewById(R.id.status);
+        mLoading = view.findViewById(R.id.loading);
+        mLoading.setVisibility(View.VISIBLE);
 
         mAdapter = new MessageAdapter(mMessages, getContext());
         mMessageView.setLayoutManager(new LinearLayoutManager(getActivity()));
@@ -139,7 +145,7 @@ public class ChatFragment extends Fragment {
         mToUser = getArguments().getString("toUser");
 
         //Set title bar
-        ((MainActivity)getActivity()).setActionBarTitle(mToUser);
+        ((MainActivity) getActivity()).setActionBarTitle(mToUser);
 
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
         mMessageView.setLayoutManager(linearLayoutManager);
@@ -190,7 +196,8 @@ public class ChatFragment extends Fragment {
                 try {
                     messageData.put("messageText", message);
                     messageData.put("time", time);
-                }catch (JSONException e){ }
+                } catch (JSONException e) {
+                }
                 mSocket.emit("new message", messageData);
             }
         });
@@ -274,11 +281,10 @@ public class ChatFragment extends Fragment {
                     && ContextCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                         REQUEST_PERMISSION);
-            }
-            else {
-                Log.i(TAG, "saveImage: " + getContext().getExternalFilesDir(null) );
+            } else {
+                Log.i(TAG, "saveImage: " + getContext().getExternalFilesDir(null));
 //                MediaStore.Images.Media.insertImage(getContext().getContentResolver(), image, "image", "diksha");
-               MediaStore.Images.Media.insertImage(getContext().getContentResolver(),path.getAbsolutePath(),path.getName(),path.getName());
+//                MediaStore.Images.Media.insertImage(getContext().getContentResolver(), path.getAbsolutePath(), path.getName(), path.getName());
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -320,17 +326,18 @@ public class ChatFragment extends Fragment {
         }
     }
 
-    public JSONObject createBaseJSONObject(){
+    public JSONObject createBaseJSONObject() {
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("person1", mToUser);
             jsonObject.put("person2", mCurrentUser.getPhoneNumber());
 
-        }catch (JSONException e){ }
+        } catch (JSONException e) {
+        }
         return jsonObject;
     }
 
-    public String getCurrentTime(){
+    public String getCurrentTime() {
         Calendar calendar = Calendar.getInstance();
         Date date = calendar.getTime();
         //SimpleDateFormat simpleDateFormat = new SimpleDateFormat("hh:mm", Locale.ENGLISH);
@@ -339,12 +346,14 @@ public class ChatFragment extends Fragment {
         return messageCreatedAt;
     }
 
-    public void loadNextData(int offset){
+    public void loadNextData(int offset) {
+//        mLoading.setVisibility(View.VISIBLE);
         JSONObject data = createBaseJSONObject();
         try {
-            data.put("offset",offset );
+            data.put("offset", offset);
             data.put("maxMessages", MAX_MESSAGES_PER_REQUEST);
-        }catch (JSONException e){ }
+        } catch (JSONException e) {
+        }
         mSocket.emit("get messages", data);
         Log.d(TAG, "run: " + offset);
 
@@ -374,18 +383,18 @@ public class ChatFragment extends Fragment {
                 public void run() {
                     //TODO: insert message in the room where username is not equal to the person who emitted the message
                     JSONObject message = (JSONObject) args[0];
-                    try{
+                    try {
                         String messageText = message.getString("messageText");
                         String time = message.getString("time");
                         String person = message.getString("person1");
-                        if(person.equals(mCurrentUser.getPhoneNumber())){
+                        if (person.equals(mCurrentUser.getPhoneNumber())) {
                             insertMessage(messageText, true, time);
-                        }
-                        else {
+                        } else {
                             insertMessage(messageText, false, time);
                         }
 
-                    }catch (JSONException e){ }
+                    } catch (JSONException e) {
+                    }
                     //playBeep();
                     //vibrate();
                 }
@@ -407,10 +416,9 @@ public class ChatFragment extends Fragment {
                         Uri uri = saveImage(bitmap);
                         String time = image.getString("time");
                         String person = image.getString("person1");
-                        if(person.equals(mCurrentUser.getPhoneNumber())){
+                        if (person.equals(mCurrentUser.getPhoneNumber())) {
                             insertImage(uri, true, time);
-                        }
-                        else {
+                        } else {
                             insertImage(uri, false, time);
                         }
                     } catch (JSONException e) {
@@ -447,38 +455,55 @@ public class ChatFragment extends Fragment {
         }
     };
 
-    private  Emitter.Listener OnGetMessages = new Emitter.Listener() {
+    private Emitter.Listener OnGetMessages = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
+            if(getActivity() == null){
+                return;
+            }
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     JSONArray data = (JSONArray) args[0];
                     Log.d(TAG, "length: " + data.length());
-                    if (data.length() == 0){
+                    if (data.length() == 0) {
+                        mLoading.setVisibility(View.GONE);
                         mMessageView.removeOnScrollListener(scrollListener);
                     }
                     try {
-                        //TODO: handle image
                         for (int i = 0; i < data.length(); i++) {
                             JSONObject message = (JSONObject) data.get(i);
-                            String messageText = message.getString("messageText");
                             String time = message.getString("time");
-                            time = time.replaceAll("[TZ]"," ");
+                            time = time.replaceAll("[TZ]", " ");
                             String person = message.getString("toId");
-                            if(person.equals(mCurrentUser.getPhoneNumber())){
-                                mMessages.add(0, new Message(messageText, null, true, time));
+                            String messageText = message.getString("messageText");
+                            if (messageText.equals("null")) {
+                                String selectedImage = message.getString("image");
+                                Log.d(TAG, "run: image" + selectedImage);
+                                Bitmap bitmap = decodeImage(selectedImage);
+                                Uri uri = saveImage(bitmap);
+                                if (person.equals(mCurrentUser.getPhoneNumber())) {
+                                    mMessages.add(0, new Message(null, uri, true, time));
+                                } else {
+                                    mMessages.add(0, new Message(null, uri, false, time));
+                                }
                             }
                             else {
-                                mMessages.add(0, new Message(messageText, null, false, time));
+                                if (person.equals(mCurrentUser.getPhoneNumber())) {
+                                    mMessages.add(0, new Message(messageText, null, true, time));
+                                } else {
+                                    mMessages.add(0, new Message(messageText, null, false, time));
+                                }
+
                             }
+                            mLoading.setVisibility(View.GONE);
                             mAdapter.notifyItemInserted(0);
                         }
-                    }catch (JSONException e) {
-                        Log.d(TAG, "could not parse ");
+                    } catch (JSONException e) {
+                        Log.d(TAG, "onGetMessage: could not parse " + e);
                     }
                     //when data is loaded for the first time
-                    if (data.length() > 1){
+                    if (data.length() > 1) {
                         scrollToBottom();
                     }
                 }
@@ -492,7 +517,7 @@ public class ChatFragment extends Fragment {
             if (!mTyping) return;
 
             mTyping = false;
-            mSocket.emit("stop typing",createBaseJSONObject());
+            mSocket.emit("stop typing", createBaseJSONObject());
         }
     };
 
