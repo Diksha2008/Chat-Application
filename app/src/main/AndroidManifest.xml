@@ -28,7 +28,8 @@
 
         <activity
             android:name=".MainActivity"
-            android:configChanges="keyboardHidden|orientation|screenSize"></activity>
+            android:configChanges="keyboardHidden|orientation|screenSize">
+        </activity>
         <activity android:name=".LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -40,7 +41,22 @@
             android:name=".CategoryActivity"
             android:label="@string/title_activity_category"
             android:noHistory="true"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+
+        <activity
+            android:name=".customer_form"
+            android:label="@string/title_activity_customer_form"
+            android:noHistory="true"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+
+        <activity
+            android:name=".business_form"
+            android:label="@string/title_activity_business_form"
+            android:noHistory="true"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
     </application>
 
 </manifest>

@@ -19,7 +19,7 @@ public class ChatApplication extends Application {
     private com.github.nkzawa.socketio.client.Socket mSocket;
     {
         try {
-            mSocket = IO.socket("http://192.168.1.4:3000");
+            mSocket = IO.socket("http://192.168.1.3:3000");
         }catch (URISyntaxException e) {}
     }
 

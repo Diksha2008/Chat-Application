@@ -5,11 +5,13 @@
     android:orientation="vertical">
 
     <TextView
+        android:id="@+id/name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="nsdlvnlsd"/>
 
     <TextView
+        android:id="@+id/onlinestatus"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="online"/>

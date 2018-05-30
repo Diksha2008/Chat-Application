@@ -55,7 +55,7 @@ public class CategoryActivity extends AppCompatActivity {
                     Log.e(TAG, "onClick: " + e);
                 }
                 mSocket.emit("insert user to db", userData);
-                Intent intent = new Intent (getBaseContext(), MainActivity.class);
+                Intent intent = new Intent (getBaseContext(), business_form.class);
                 startActivity(intent);
             }
         });
@@ -69,7 +69,7 @@ public class CategoryActivity extends AppCompatActivity {
                     Log.e(TAG, "onClick: " + e);
                 }
                 mSocket.emit("insert user to db", userData);
-                Intent intent = new Intent (getBaseContext(), MainActivity.class);
+                Intent intent = new Intent (getBaseContext(), customer_form.class);
                 startActivity(intent);
             }
         });
