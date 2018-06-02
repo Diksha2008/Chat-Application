@@ -1,5 +1,6 @@
 package com.example.diksha.chatapplication;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -35,6 +36,9 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthProvider;
 
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.concurrent.TimeUnit;
 
@@ -79,6 +83,8 @@ public class LoginActivity extends AppCompatActivity  implements
     private Button mSignOutButton;
 
     ProgressBar progressBar;
+
+    private boolean isNewUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -263,6 +269,7 @@ public class LoginActivity extends AppCompatActivity  implements
                             Log.d(TAG, "signInWithCredential:success");
 
                             FirebaseUser user = task.getResult().getUser();
+                            isNewUser = task.getResult().getAdditionalUserInfo().isNewUser();
                             // [START_EXCLUDE]
                             updateUI(STATE_SIGNIN_SUCCESS, user);
                             // [END_EXCLUDE]
@@ -378,7 +385,13 @@ public class LoginActivity extends AppCompatActivity  implements
             mSocket = app.getSocket();
             mSocket.on(Socket.EVENT_CONNECT,OnConnect);
             mSocket.connect();
-            Intent intent = new Intent(this, MainActivity.class);
+            Intent intent;
+            if (isNewUser){
+                intent = new Intent (this, CategoryActivity.class);
+            }
+            else{
+                intent = new Intent (this, MainActivity.class);
+            }
             startActivity(intent);
             finish();
         }

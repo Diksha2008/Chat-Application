@@ -50,12 +50,19 @@ public class UserListFragment extends android.support.v4.app.Fragment {
 
         ChatApplication app = (ChatApplication) getActivity().getApplication();
         mSocket = app.getSocket();
+        mSocket.on("get users", OnGetUsers);
 
         mCurrentUser = app.getCurrentUser();
 
-        sendCurrentUserToServer();
+        JSONObject userData = new JSONObject();
+        try {
+            userData.put("phone", mCurrentUser.getPhoneNumber());
+        } catch (JSONException e) {
+            Log.e(TAG, "onCreate: " + e);
+        }
 
-        mSocket.on("login", OnLogin);
+        mSocket.emit("get users", userData);
+
     }
 
     @Nullable
@@ -81,7 +88,7 @@ public class UserListFragment extends android.support.v4.app.Fragment {
     }
 
 
-    private Emitter.Listener OnLogin = new Emitter.Listener() {
+    private Emitter.Listener OnGetUsers = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
             //to avoid crash on rotation
@@ -96,10 +103,9 @@ public class UserListFragment extends android.support.v4.app.Fragment {
                     for (int i = 0; i < result.length(); i++) {
                         try {
                             JSONObject jsonObject = (JSONObject) result.get(i);
-                          //  mUserList.clear();
                             mUserList.add(new User(jsonObject.optString("phone")));
                             mUserAdapter.notifyItemInserted(mUserList.size() - 1);
-                            mSocket.off("login", OnLogin);
+                            mSocket.off("get users", OnGetUsers);
                         } catch (JSONException e) {}
                     }
                 }
@@ -107,12 +113,4 @@ public class UserListFragment extends android.support.v4.app.Fragment {
         }
     };
 
-    public void sendCurrentUserToServer(){
-        JSONObject data = new JSONObject();
-        try {
-            data.put("uid", mCurrentUser.getUid());
-            data.put("phone", mCurrentUser.getPhoneNumber());
-        } catch (JSONException e) { }
-        mSocket.emit("login", data);
-    }
 }

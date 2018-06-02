@@ -1,14 +1,10 @@
 package com.example.diksha.chatapplication;
 
-import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
-import android.text.Layout;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,11 +13,8 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.google.firebase.auth.FirebaseUser;
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -77,7 +70,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
 
         final Message message = mMessages.get(position);
 
-        //set time view
         SimpleDateFormat input = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
         SimpleDateFormat output = new SimpleDateFormat("hh:mm", Locale.ENGLISH);
         try {
@@ -86,7 +78,6 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
         }catch (ParseException e){
             Log.d(TAG, "displayTime: Could not parse" );
         }
-
 
         //set message view
         Boolean isImage = message.getmImage() != null;
@@ -98,7 +89,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
             //aligning the message
             if(!message.isReceived()){
                 alignTimeView(holder.mTimeView,RelativeLayout.LEFT_OF, R.id.image);
-                alignMessageView(holder.mImageView, false, R.drawable.rounded_purple_rectangle, RelativeLayout.ALIGN_PARENT_RIGHT, Color.WHITE);
+                alignMessageView(holder.mImageView, false, R.drawable.rounded_blue_rectangle, RelativeLayout.ALIGN_PARENT_RIGHT, Color.WHITE);
             }
             else {
                 alignTimeView(holder.mTimeView, RelativeLayout.RIGHT_OF, R.id.image);
@@ -124,7 +115,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
             // aligning the message
             if(!message.isReceived()){
                 alignTimeView(holder.mTimeView,RelativeLayout.LEFT_OF, R.id.msg);
-                alignMessageView(holder.mTextView, true, R.drawable.rounded_purple_rectangle, RelativeLayout.ALIGN_PARENT_RIGHT, Color.WHITE);
+                alignMessageView(holder.mTextView, true, R.drawable.rounded_blue_rectangle, RelativeLayout.ALIGN_PARENT_RIGHT, Color.WHITE);
             }
             else {
                 alignTimeView(holder.mTimeView, RelativeLayout.RIGHT_OF, R.id.msg);

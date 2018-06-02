@@ -2,7 +2,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="@drawable/chat_window_background">
+
+    <ProgressBar
+        android:id="@+id/loading"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="150dp"
+        android:layout_gravity="center"
+        android:visibility="gone"/>
 
     <TextView
         android:id="@+id/status"
@@ -27,7 +36,8 @@
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingLeft="2dp"
-        android:paddingRight="2dp">
+        android:paddingRight="2dp"
+        android:background="@android:color/white">
 
         <ImageButton
             android:id="@+id/photoPickerButton"

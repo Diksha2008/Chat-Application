@@ -12,6 +12,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.EditText;
@@ -31,9 +32,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
+       // requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
         setContentView(R.layout.activity_main);
-        //getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.chat_title);
+        ChatApplication app = (ChatApplication) getApplication();
+        Socket mSocket = app.getSocket();
+        mSocket.on("hey", OnHey);
+       // getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.chat_title);
         android.support.v4.app.Fragment userFragment = new UserListFragment();
         android.support.v4.app.FragmentTransaction transaction = this.getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.chat, userFragment);
@@ -47,4 +51,16 @@ public class MainActivity extends AppCompatActivity {
     public void setActionBarTitle(String title) {
         getSupportActionBar().setTitle(title);
     }
+
+    private Emitter.Listener OnHey = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Log.e("MainActivity", "event received ", new Exception());
+                }
+            });
+        }
+    };
 }
