@@ -1,19 +1,14 @@
 package com.example.diksha.chatapplication;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
@@ -36,9 +31,6 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthProvider;
 
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.concurrent.TimeUnit;
 
@@ -389,7 +381,7 @@ public class LoginActivity extends AppCompatActivity  implements
                 intent = new Intent (this, CategoryActivity.class);
             }
             else{
-                intent = new Intent (this, Main2Activity.class);
+                intent = new Intent (this, MainActivity.class);
             }
             startActivity(intent);
             finish();

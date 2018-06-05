@@ -371,8 +371,11 @@ public class ChatFragment extends Fragment {
             @Override
             public boolean onKey(View view, int i, KeyEvent keyEvent) {
                 if (i == KeyEvent.KEYCODE_BACK) {
+                    if (getFragmentManager().getBackStackEntryCount() > 0){
+                        getFragmentManager().popBackStack();
+                    }
                     mNavigationView.setVisibility(View.VISIBLE);
-                    getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+//                    getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
                     mSocket.emit("leave room", createBaseJSONObject());
                     return true;
                 }

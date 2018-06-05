@@ -14,6 +14,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.github.nkzawa.emitter.Emitter;
@@ -25,8 +26,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -44,8 +46,9 @@ public class UserListFragment extends android.support.v4.app.Fragment {
     private Socket mSocket;
     private FirebaseUser mCurrentUser;
     private List<User> mUserList = new ArrayList<User>();
+    private JSONArray result;
+
     private RecyclerView.Adapter mUserAdapter;
-    private Map<String, JSONObject> mData;
 
     private RecyclerView mUserListView;
 
@@ -62,8 +65,6 @@ public class UserListFragment extends android.support.v4.app.Fragment {
         ChatApplication app = (ChatApplication) getActivity().getApplication();
         mSocket = app.getSocket();
         mSocket.on("get users", OnGetUsers);
-
-        mData = new HashMap<String, JSONObject>();
 
         mCurrentUser = app.getCurrentUser();
 
@@ -121,30 +122,31 @@ public class UserListFragment extends android.support.v4.app.Fragment {
     }
 
     private void getContactNames() {
-        LinkedHashSet<String> numbers = new LinkedHashSet<>();
-        LinkedHashSet<String> names = new LinkedHashSet<>();
+        for (int i = 0; i < result.length(); i++) {
+            try {
+                JSONObject obj = (JSONObject) result.get(i);
+                int userType = obj.getInt("user_type");
+                String selection = ContactsContract.CommonDataKinds.Phone.NUMBER + " = ?";
+                String selectionArgs[] = {obj.getString("phone")};
+                Cursor phones = getActivity().getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, selection, selectionArgs, null);
+                if (phones != null && phones.moveToNext()) {
+                    String name = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
+                    String phoneNumber = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                    Log.i(TAG, "run: " + name + " " + phoneNumber);
+                    mUserList.add(new User(phoneNumber, name, userType));
+                }
+                if (phones != null) {
+                    phones.close();
+                }
+            } catch (JSONException e) { Log.e(TAG, "run: Could not Parse", e); }
 
-        Cursor phones = getActivity().getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
-        while (phones!=null && phones.moveToNext()) {
-            String name = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
-            String phoneNumber = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-
-            for (int i = 0; i < mUserList.size(); i++) {
-                Log.i(TAG, "getContactNames: " + phoneNumber + " " + mUserList.get(i));
-            }
-            if (mData != null && mData.containsKey(phoneNumber)) {
-                numbers.add(phoneNumber);
-                names.add(name);
-            }
-        }
-
-        for (Iterator<String> i = numbers.iterator(), j = names.iterator(); i.hasNext();) {
-            mUserList.add(new User(i.next(), j.next()));
-            mUserAdapter.notifyItemInserted(mUserList.size() - 1);
-        }
-
-        if (phones != null) {
-            phones.close();
+            Collections.sort(mUserList, new Comparator<User>() {
+                @Override
+                public int compare(User user1, User user2) {
+                    return user1.getUsername().compareToIgnoreCase(user2.getUsername());
+                }
+            });
+            mUserAdapter.notifyDataSetChanged();
         }
     }
 
@@ -159,17 +161,9 @@ public class UserListFragment extends android.support.v4.app.Fragment {
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    JSONArray result = (JSONArray) args[0];
-                    for (int i = 0; i < result.length(); i++) {
-                        try {
-                            JSONObject jsonObject = (JSONObject) result.get(i);
-                            mData.put(jsonObject.getString("phone"), jsonObject);
-                            mSocket.off("get users", OnGetUsers);
-                        } catch (JSONException e) {
-                            Log.e(TAG, "OnGetUser: Could not parse", e);
-                        }
-                    }
+                    result = (JSONArray) args[0];
                     showContacts();
+                    mSocket.off("get users", OnGetUsers);
                 }
             });
         }

@@ -5,7 +5,14 @@
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.diksha.chatapplication.Main2Activity">
+    tools:context="com.example.diksha.chatapplication.MainActivity">
+
+    <ProgressBar
+        android:id="@+id/loadApp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="150dp"
+        android:layout_gravity="center" />
 
     <FrameLayout
         android:id="@+id/list"

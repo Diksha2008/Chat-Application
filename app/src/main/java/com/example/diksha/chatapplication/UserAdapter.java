@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.github.nkzawa.socketio.client.Socket;
@@ -30,12 +31,19 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
     private static final String TAG = "UserAdapter";
     private List<User> mUsers;
     private Activity mActivity;
+    private static final int BUSINESS = 1;
+
 
     public static class ViewHolder extends RecyclerView.ViewHolder{
+        public LinearLayout mUserView;
         public TextView mDisplayUsername;
+        public TextView mUserTypeView;
         public ViewHolder(View v){
             super(v);
+            mUserView = (LinearLayout) v.findViewById(R.id.user);
             mDisplayUsername = (TextView) v.findViewById(R.id.username);
+            mUserTypeView = (TextView) v.findViewById(R.id.userType);
+
         }
     }
     public UserAdapter(List<User> Users, Activity context){
@@ -54,8 +62,11 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
     public void onBindViewHolder(final ViewHolder holder, int position) {
         final User user = mUsers.get(position);
         Log.i(TAG, "onClick: " + user.getPhone());
+        if (user.getUserType() == BUSINESS){
+            holder.mUserTypeView.setText("business");
+        }
         holder.mDisplayUsername.setText(user.getUsername());
-        holder.mDisplayUsername.setOnClickListener(new View.OnClickListener() {
+        holder.mUserView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 

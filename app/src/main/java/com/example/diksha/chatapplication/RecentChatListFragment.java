@@ -20,6 +20,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import static android.content.ContentValues.TAG;
@@ -69,23 +71,28 @@ public class RecentChatListFragment extends Fragment {
             if( getActivity() == null){
                 return;
             }
+            //TODO: get labels
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    //Log.i(TAG, "run: " + args[0]);
                     JSONArray data = (JSONArray) args[0];
                     for (int i = 0; i<data.length(); i++) {
                         try {
                             String selection = ContactsContract.CommonDataKinds.Phone.NUMBER + " = ?";
                             JSONObject object = (JSONObject) data.get(i);
-                            String selectionArgs[] = {object.getString("toId")};
+                            String phone = object.getString("toId");
+                            String selectionArgs[] = {phone};
                             Cursor phones = getActivity().getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, selection, selectionArgs, null);
                             if (phones != null && phones.moveToNext()) {
+
                                 String name = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
                                 String phoneNumber = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-                                Log.i(TAG, "run: " + name + " " + phoneNumber);
+
                                 mUserList.add(new User(phoneNumber, name));
                                 mUserAdapter.notifyDataSetChanged();
+                            }
+                            else{
+                                mUserList.add((new User(phone, phone)));
                             }
                             if (phones != null) {
                                 phones.close();
