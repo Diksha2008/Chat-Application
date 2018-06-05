@@ -16,6 +16,7 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
+import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -52,8 +53,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import java.lang.reflect.Array;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -72,6 +71,7 @@ public class ChatFragment extends Fragment {
     private EditText mEditText;
     private TextView mStatus;
     private ProgressBar mLoading;
+    private BottomNavigationView mNavigationView;
     private List<Message> mMessages = new ArrayList<Message>();
     private boolean mTyping = false;
     private Handler mMessageHandler = new Handler();
@@ -81,8 +81,6 @@ public class ChatFragment extends Fragment {
     private static final int RC_PHOTO_PICKER = 2;
     private static final int REQUEST_PERMISSION = 1;
     private static final int MAX_MESSAGES_PER_REQUEST = 10;
-    private static final int TEXT_MESSAGE = 8;
-    private static final int IMAGE_MESSAGE = 9;
     private static final String TAG = "ChatFragment";
 
 
@@ -137,8 +135,11 @@ public class ChatFragment extends Fragment {
 
         mMessageView = (RecyclerView) view.findViewById(R.id.messages);
         mStatus = (TextView) view.findViewById(R.id.status);
-        mLoading = view.findViewById(R.id.loading);
+        mLoading = (ProgressBar) view.findViewById(R.id.loading);
+        mNavigationView = (BottomNavigationView) getActivity().findViewById(R.id.navigation);
+
         mLoading.setVisibility(View.VISIBLE);
+        mNavigationView.setVisibility(View.GONE);
 
         mAdapter = new MessageAdapter(mMessages, getContext());
         mMessageView.setLayoutManager(new LinearLayoutManager(getActivity()));
@@ -147,7 +148,7 @@ public class ChatFragment extends Fragment {
         mToUser = getArguments().getString("toUser");
 
         //Set title bar
-        ((MainActivity) getActivity()).setActionBarTitle(mToUser);
+        //((MainActivity) getActivity()).setActionBarTitle(mToUser);
 
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
         mMessageView.setLayoutManager(linearLayoutManager);
@@ -363,13 +364,14 @@ public class ChatFragment extends Fragment {
 
     }
 
-    public void isBackPressed(){
+    public void isBackPressed() {
         getView().setFocusableInTouchMode(true);
         getView().requestFocus();
         getView().setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View view, int i, KeyEvent keyEvent) {
-                if(i == KeyEvent.KEYCODE_BACK){
+                if (i == KeyEvent.KEYCODE_BACK) {
+                    mNavigationView.setVisibility(View.VISIBLE);
                     getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
                     mSocket.emit("leave room", createBaseJSONObject());
                     return true;
@@ -450,13 +452,22 @@ public class ChatFragment extends Fragment {
 
     private Emitter.Listener OnTyping = new Emitter.Listener() {
         @Override
-        public void call(Object... args) {
+        public void call(final Object... args) {
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     //TODO:show typing only to the other user in ther room where username is not equal to the person who emitted the message
-                    mStatus.setVisibility(View.VISIBLE);
-                    mStatus.setText("Typing...");
+                    JSONObject data = (JSONObject) args[0];
+                    try {
+                        String toUser = data.getString("person2");
+                        Log.i(TAG, "run: " + toUser + " " + mToUser);
+                        if(toUser.equals(mToUser)) {
+                            mStatus.setVisibility(View.VISIBLE);
+                            mStatus.setText("Typing...");
+                        }
+                    }catch (JSONException e){
+                        Log.e(TAG, "OnTyping: person1 not found ", e);
+                    }
                 }
             });
         }
@@ -478,7 +489,7 @@ public class ChatFragment extends Fragment {
     private Emitter.Listener OnGetMessages = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
-            if(getActivity() == null){
+            if (getActivity() == null) {
                 return;
             }
             getActivity().runOnUiThread(new Runnable() {
@@ -507,8 +518,7 @@ public class ChatFragment extends Fragment {
                                 } else {
                                     mMessages.add(0, new Message(null, uri, false, time));
                                 }
-                            }
-                            else {
+                            } else {
                                 if (person.equals(mCurrentUser.getPhoneNumber())) {
                                     mMessages.add(0, new Message(messageText, null, true, time));
                                 } else {

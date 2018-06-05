@@ -4,8 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:background="@android:color/white"
+    android:orientation="vertical"
     tools:context="com.example.diksha.chatapplication.business_form">
 
 
@@ -34,7 +34,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Businesss Name"
-                android:textSize="24sp"/>
+                android:textSize="24sp" />
 
             <EditText
                 android:id="@+id/name_business"
@@ -43,13 +43,13 @@
                 android:layout_marginBottom="@dimen/activity_horizontal_margin"
                 android:layout_marginTop="@dimen/activity_horizontal_margin"
                 android:hint="eg. Star Enterprise"
-                android:inputType="textPersonName"/>
+                android:inputType="textPersonName" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="E-Mail"
-                android:textSize="24sp"/>
+                android:textSize="24sp" />
 
             <EditText
                 android:id="@+id/email_business"
@@ -58,18 +58,18 @@
                 android:layout_marginBottom="@dimen/activity_horizontal_margin"
                 android:layout_marginTop="@dimen/activity_horizontal_margin"
                 android:hint="eg. queries@star.com"
-                android:inputType="textEmailAddress"/>
+                android:inputType="textEmailAddress" />
 
             <Button
                 android:id="@+id/add_details_button_business"
                 style="?android:textAppearanceSmall"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center"
                 android:layout_marginTop="20dp"
-                android:textSize="25dp"
                 android:text="Submit"
-                android:textStyle="bold"
-                android:layout_gravity="center"/>
+                android:textSize="25dp"
+                android:textStyle="bold" />
         </LinearLayout>
 
     </ScrollView>

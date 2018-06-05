@@ -4,10 +4,12 @@ import android.app.Activity;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.os.Bundle;
+import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,9 +27,9 @@ import java.util.List;
  */
 
 public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
+    private static final String TAG = "UserAdapter";
     private List<User> mUsers;
     private Activity mActivity;
-    private Socket mSocket;
 
     public static class ViewHolder extends RecyclerView.ViewHolder{
         public TextView mDisplayUsername;
@@ -49,20 +51,23 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(final ViewHolder holder, int position) {
         final User user = mUsers.get(position);
-        holder.mDisplayUsername.setText(user.getUserId());
+        Log.i(TAG, "onClick: " + user.getPhone());
+        holder.mDisplayUsername.setText(user.getUsername());
         holder.mDisplayUsername.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 android.support.v4.app.Fragment chatFragment = new ChatFragment();
                 android.support.v4.app.FragmentTransaction transaction = ((FragmentActivity)mActivity).getSupportFragmentManager().beginTransaction();
-                transaction.replace(R.id.chat, chatFragment).addToBackStack(null).commit();
+                transaction.replace(R.id.list, chatFragment).addToBackStack(null).commit();
+
                 //sending the user to which chat is initiated to the fragment
                 Bundle toUser = new Bundle();
-                toUser.putString("toUser", user.getUserId());
+                toUser.putString("toUser", user.getPhone());
                 chatFragment.setArguments(toUser);
-                joinRoom(user.getUserId());
+                joinRoom(user.getPhone());
             }
         });
 
@@ -73,14 +78,16 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
         return mUsers.size();
     }
 
-    public void joinRoom(String userId){
+    private void joinRoom(String userId){
         ChatApplication app = (ChatApplication) mActivity.getApplication();
-        mSocket = app.getSocket();
+        Socket mSocket = app.getSocket();
         JSONObject roomData = new JSONObject();
         try{
             roomData.put("person1", userId);
             roomData.put("person2", app.getCurrentUser().getPhoneNumber());
-        }catch (JSONException e){  }
+        }catch (JSONException e){
+            Log.e(TAG, "joinRoom: Could not parse", e);
+        }
         mSocket.emit("join room", roomData);
     }
 }

@@ -32,6 +32,12 @@ public abstract class InfiniteRecyclerViewScrollListener extends RecyclerView.On
         int totalItemCount = mLayoutManager.getItemCount();
         firstVisibleItemPosition = ((LinearLayoutManager)mLayoutManager).findFirstVisibleItemPosition();
 
+        Log.i(TAG, "onScrolled: totalitemcount" + totalItemCount);
+        Log.i(TAG, "onScrolled: previoustotalitemcount" + previousTotalItemCount);
+        Log.i(TAG, "onScrolled: firstvisibleitemposition" + firstVisibleItemPosition);
+
+        // If the total item count is zero and the previous isn't, assume the
+        // list is invalidated and should be reset back to initial state
         if(totalItemCount < previousTotalItemCount){
             this.currentPage = this.startingPageIndex;
             this.previousTotalItemCount = totalItemCount;
@@ -40,6 +46,7 @@ public abstract class InfiniteRecyclerViewScrollListener extends RecyclerView.On
             }
         }
 
+        //data has already been loaded as total items are greater than its previous value, hence change it to false
         if (loading && (totalItemCount > previousTotalItemCount)){
             loading = false;
             previousTotalItemCount = totalItemCount;
@@ -47,6 +54,7 @@ public abstract class InfiniteRecyclerViewScrollListener extends RecyclerView.On
 
         //check for scroll up
         if(dy < 0) {
+            //if it is not loading and when among all the loaded items the firstVisible loaded item becomes less than threshold
             if (!loading && firstVisibleItemPosition <= visibleThreshold) {
                 currentPage++;
                 onLoadMore(currentPage, totalItemCount, recyclerView);

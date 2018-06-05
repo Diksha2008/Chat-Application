@@ -59,9 +59,8 @@ public class LoginActivity extends AppCompatActivity  implements
     private  Socket mSocket;
     private ChatApplication app;
 
-    // [START declare_auth]
+
     private FirebaseAuth mAuth;
-    // [END declare_auth]
 
     private boolean mVerificationInProgress = false;
     private String mVerificationId;
@@ -390,7 +389,7 @@ public class LoginActivity extends AppCompatActivity  implements
                 intent = new Intent (this, CategoryActivity.class);
             }
             else{
-                intent = new Intent (this, MainActivity.class);
+                intent = new Intent (this, Main2Activity.class);
             }
             startActivity(intent);
             finish();
@@ -473,6 +472,7 @@ public class LoginActivity extends AppCompatActivity  implements
             });
         }
     };
+
 
 
 }

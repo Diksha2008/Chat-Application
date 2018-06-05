@@ -84,5 +84,9 @@
 
     <string name="invalid_name">Enter a valid name</string>
     <string name="invalid_email">Enter a valid email</string>
+    <string name="title_activity_main2">Main2Activity</string>
+    <string name="title_recent_chats">Chats</string>
+    <string name="title_contacts">Contacts</string>
+    <string name="title_products">My Products</string>
 
 </resources>
