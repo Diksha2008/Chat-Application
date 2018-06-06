@@ -7,6 +7,7 @@ import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,11 +17,19 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 
+import com.github.nkzawa.socketio.client.Socket;
+import com.google.firebase.auth.FirebaseUser;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.List;
 
 public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHolder> {
     private List<Product> mProducts;
-
+    private Socket mSocket;
+    private FirebaseUser mCurrentUser;
+    private Activity mActivity;
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public TextView mItemName;
         public TextView mPrice;
@@ -36,9 +45,10 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
     }
     public ProductAdapter(List<Product> Products, Activity context){
         mProducts = Products;
+        mActivity = context;
     }
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ProductAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.product, parent, false);
         ViewHolder vh = new ViewHolder(v);
         return vh;
@@ -47,6 +57,9 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
     @Override
     public void onBindViewHolder(ViewHolder holder, final int position)
     {
+        final ChatApplication app = (ChatApplication) mActivity.getApplication();
+        mSocket = app.getSocket();
+        mCurrentUser=app.getCurrentUser();
         final Product product = mProducts.get(position);
         holder.mItemName.setText(product.getProductName());
         holder.mPrice.setText(product.getProductPrice());
@@ -56,11 +69,17 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
             public void onClick(View view) {
                 mProducts.remove(product);
                 notifyItemRemoved(position);
+                JSONObject data=new JSONObject();
+                try{
+                    data.put("productName",product.getProductName());
+                    data.put("phone",mCurrentUser.getPhoneNumber());
+                }catch(JSONException e) {}
+                mSocket.emit("delete product",data);
             }
         });
 
     }
-   @Override
+    @Override
     public int getItemCount() {
         return mProducts.size();
     }

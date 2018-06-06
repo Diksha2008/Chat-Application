@@ -41,6 +41,7 @@ public class RecentChatListFragment extends Fragment {
         ChatApplication app = (ChatApplication) getActivity().getApplication();
         Socket mSocket = app.getSocket();
         String currentUser = app.getCurrentUser().getPhoneNumber();
+        mUserList.clear();
 
         mSocket.on("get recent chats", OnGetUsers);
 

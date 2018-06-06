@@ -84,9 +84,14 @@
 
     <string name="invalid_name">Enter a valid name</string>
     <string name="invalid_email">Enter a valid email</string>
+    <string name="invalid_address">Enter a valid address</string>
+    <string name="invalid_type">Enter a valid business type</string>
+    <string name="invalid_time">Enter a valid business hours</string>
+
     <string name="title_activity_main2">Main2Activity</string>
     <string name="title_recent_chats">Chats</string>
     <string name="title_contacts">Contacts</string>
     <string name="title_products">My Products</string>
+    <string name="title_edit_profile">Edit profile</string>
 
 </resources>
