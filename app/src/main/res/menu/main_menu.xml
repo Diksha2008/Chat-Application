@@ -4,7 +4,7 @@
     <item
         android:id="@+id/editProfile"
         android:title="@string/title_edit_profile" />
-    <item
-        android:id="@+id/notification"
-        android:title="@string/title_notification"/>
+    <item android:id="@+id/viewProfile"
+        android:title="View business profile"
+        android:visible="false"/>
 </menu>

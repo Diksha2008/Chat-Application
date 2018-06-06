@@ -32,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
     private FragmentTransaction transaction;
     private ProgressBar mLoadingView;
     private AlertDialog alertDialog;
-    private Menu mMenu;
+    private static Menu mMenu;
     private Socket mSocket;
     private ChatApplication app;
     private String name;
@@ -56,12 +56,8 @@ public class MainActivity extends AppCompatActivity {
                     transaction.commit();
                     return true;
                 case R.id.navigation_contacts:
-                    Bundle b = new Bundle();
-                    b.putInt("user type", userType);
 
                     Fragment userFragment = new UserListFragment();
-                    userFragment.setArguments(b);
-
                     transaction = getSupportFragmentManager().beginTransaction();
                     transaction.replace(R.id.list, userFragment).addToBackStack(null);
                     transaction.commit();
@@ -104,9 +100,9 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onResume(){
-        mNavigation.setVisibility(View.VISIBLE);
-        mLoadingView.setVisibility(View.GONE);
-        mNavigation.setSelectedItemId(R.id.navigation_recent_chats);
+        //mNavigation.setVisibility(View.VISIBLE);
+        //mLoadingView.setVisibility(View.GONE);
+        //mNavigation.setSelectedItemId(R.id.navigation_recent_chats);
         super.onResume();
     }
 
@@ -162,9 +158,16 @@ public class MainActivity extends AppCompatActivity {
                 intent.putExtras(b);
                 startActivityForResult(intent, 1);
                 return true;
+            case  R.id.viewProfile:
+                intent = new Intent(this, ViewProfileActivity.class);
+                startActivity(intent);
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    public static Menu getOptionsMenu(){
+        return mMenu;
     }
 
     private Emitter.Listener OnGetCurrentUserType = new Emitter.Listener() {
@@ -186,8 +189,10 @@ public class MainActivity extends AppCompatActivity {
 
                     if (userType == CUSTOMER) {
                         mNavigation.getMenu().removeItem(R.id.navigation_products);
-                        MenuItem item = mMenu.findItem(R.id.editProfile);
-                        item.setVisible(false);
+                        if (mMenu != null) {
+                            MenuItem item = mMenu.findItem(R.id.editProfile);
+                            item.setVisible(false);
+                        }
                     }
                     if (userType == BUSINESS){
                         mSocket.emit("get business details", app.getCurrentUser().getPhoneNumber());

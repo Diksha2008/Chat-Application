@@ -82,6 +82,7 @@ public class RecentChatListFragment extends Fragment {
                             String selection = ContactsContract.CommonDataKinds.Phone.NUMBER + " = ?";
                             JSONObject object = (JSONObject) data.get(i);
                             String phone = object.getString("toId");
+                            int userType = object.getInt("user_type");
                             String selectionArgs[] = {phone};
                             Cursor phones = getActivity().getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, selection, selectionArgs, null);
                             if (phones != null && phones.moveToNext()) {
@@ -89,7 +90,7 @@ public class RecentChatListFragment extends Fragment {
                                 String name = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
                                 String phoneNumber = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
 
-                                mUserList.add(new User(phoneNumber, name));
+                                mUserList.add(new User(phoneNumber, name, userType));
                                 mUserAdapter.notifyDataSetChanged();
                             }
                             else{

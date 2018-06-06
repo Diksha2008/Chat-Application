@@ -30,6 +30,8 @@ import android.util.Base64;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -65,6 +67,7 @@ import java.util.UUID;
 
 public class ChatFragment extends Fragment {
 
+    private static final int BUSINESS = 1;
     private Socket mSocket;
     private RecyclerView mMessageView;
     private RecyclerView.Adapter mAdapter;
@@ -76,7 +79,10 @@ public class ChatFragment extends Fragment {
     private boolean mTyping = false;
     private Handler mMessageHandler = new Handler();
     private FirebaseUser mCurrentUser;
-    private String mToUser;
+    private int userType;
+    private static String mToUser;
+    private MenuItem editProfile;
+    private MenuItem viewProfile;
     private InfiniteRecyclerViewScrollListener scrollListener;
     private static final int RC_PHOTO_PICKER = 2;
     private static final int REQUEST_PERMISSION = 1;
@@ -103,6 +109,7 @@ public class ChatFragment extends Fragment {
         mSocket.on("typing", OnTyping);
         mSocket.on("stop typing", OnStopTyping);
         mSocket.on("get messages", OnGetMessages);
+       // mSocket.on("get user type", OnGetUserType);
     }
 
     @Override
@@ -133,6 +140,8 @@ public class ChatFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+
+
         mMessageView = (RecyclerView) view.findViewById(R.id.messages);
         mStatus = (TextView) view.findViewById(R.id.status);
         mLoading = (ProgressBar) view.findViewById(R.id.loading);
@@ -146,6 +155,16 @@ public class ChatFragment extends Fragment {
         mMessageView.setAdapter(mAdapter);
 
         mToUser = getArguments().getString("toUser");
+        userType = getArguments().getInt("user type");
+
+        Menu m = MainActivity.getOptionsMenu();
+        editProfile = m.findItem(R.id.editProfile);
+        editProfile.setVisible(false);
+
+        if (userType == BUSINESS){
+            viewProfile = m.findItem(R.id.viewProfile);
+            viewProfile.setVisible(true);
+        }
 
         //Set title bar
         //((MainActivity) getActivity()).setActionBarTitle(mToUser);
@@ -331,6 +350,10 @@ public class ChatFragment extends Fragment {
         }
     }
 
+    public static String getToUser(){
+        return mToUser;
+    }
+
     public JSONObject createBaseJSONObject() {
         JSONObject jsonObject = new JSONObject();
         try {
@@ -373,6 +396,10 @@ public class ChatFragment extends Fragment {
                 if (i == KeyEvent.KEYCODE_BACK) {
                     if (getFragmentManager().getBackStackEntryCount() > 0){
                         getFragmentManager().popBackStack();
+                    }
+                    if (userType == BUSINESS){
+                        editProfile.setVisible(true);
+                        viewProfile.setVisible(false);
                     }
                     mNavigationView.setVisibility(View.VISIBLE);
 //                    getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
@@ -463,7 +490,6 @@ public class ChatFragment extends Fragment {
                     JSONObject data = (JSONObject) args[0];
                     try {
                         String toUser = data.getString("person2");
-                        Log.i(TAG, "run: " + toUser + " " + mToUser);
                         if(toUser.equals(mToUser)) {
                             mStatus.setVisibility(View.VISIBLE);
                             mStatus.setText("Typing...");
@@ -499,7 +525,6 @@ public class ChatFragment extends Fragment {
                 @Override
                 public void run() {
                     JSONArray data = (JSONArray) args[0];
-                    Log.d(TAG, "length: " + data.length());
                     if (data.length() == 0) {
                         mLoading.setVisibility(View.GONE);
                         mMessageView.removeOnScrollListener(scrollListener);
@@ -513,7 +538,6 @@ public class ChatFragment extends Fragment {
                             String messageText = message.getString("messageText");
                             if (messageText.equals("null")) {
                                 String selectedImage = message.getString("image");
-                                Log.d(TAG, "run: image" + selectedImage);
                                 Bitmap bitmap = decodeImage(selectedImage);
                                 Uri uri = saveImage(bitmap);
                                 if (person.equals(mCurrentUser.getPhoneNumber())) {
@@ -543,6 +567,19 @@ public class ChatFragment extends Fragment {
             });
         }
     };
+
+//    Emitter.Listener OnGetUserType = new Emitter.Listener() {
+//        @Override
+//        public void call(final Object... args) {
+//            getActivity().runOnUiThread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    int userType = (int) args[0];
+//                    Log.i(TAG, "run: "+ userType);
+//                }
+//            });
+//        }
+//    };
 
     private Runnable OnTypingTimeout = new Runnable() {
         @Override
