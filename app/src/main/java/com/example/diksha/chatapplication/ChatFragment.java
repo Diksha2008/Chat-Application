@@ -72,7 +72,6 @@ public class ChatFragment extends Fragment {
     private RecyclerView mMessageView;
     private RecyclerView.Adapter mAdapter;
     private EditText mEditText;
-    private TextView mStatus;
     private ProgressBar mLoading;
     private BottomNavigationView mNavigationView;
     private List<Message> mMessages = new ArrayList<Message>();
@@ -81,6 +80,7 @@ public class ChatFragment extends Fragment {
     private FirebaseUser mCurrentUser;
     private int userType;
     private static String mToUser;
+    private boolean isOtherUserOnline = false;
     private MenuItem editProfile;
     private MenuItem viewProfile;
     private InfiniteRecyclerViewScrollListener scrollListener;
@@ -109,8 +109,35 @@ public class ChatFragment extends Fragment {
         mSocket.on("typing", OnTyping);
         mSocket.on("stop typing", OnStopTyping);
         mSocket.on("get messages", OnGetMessages);
+        mSocket.on("offline", OnOffline);
+
        // mSocket.on("get user type", OnGetUserType);
     }
+
+    @Override
+    public void setUserVisibleHint(boolean visible)
+    {
+        super.setUserVisibleHint(visible);
+        if (visible && isResumed())
+        {
+            onResume();
+        }
+    }
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+        if (!getUserVisibleHint())
+        {
+            return;
+        }
+        JSONObject data=createBaseJSONObject();
+        mSocket.emit("update delivery status",data);
+        mSocket.emit("check online presence",mToUser);
+        mSocket.on("online result",UpdateOnlineStatus);
+    }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -143,7 +170,6 @@ public class ChatFragment extends Fragment {
 
 
         mMessageView = (RecyclerView) view.findViewById(R.id.messages);
-        mStatus = (TextView) view.findViewById(R.id.status);
         mLoading = (ProgressBar) view.findViewById(R.id.loading);
         mNavigationView = (BottomNavigationView) getActivity().findViewById(R.id.navigation);
 
@@ -157,17 +183,21 @@ public class ChatFragment extends Fragment {
         mToUser = getArguments().getString("toUser");
         userType = getArguments().getInt("user type");
 
-        Menu m = MainActivity.getOptionsMenu();
-        editProfile = m.findItem(R.id.editProfile);
-        editProfile.setVisible(false);
+        String username = getArguments().getString("username");
+        ((MainActivity)getActivity()).setActionBarTitle(username);
 
-        if (userType == BUSINESS){
-            viewProfile = m.findItem(R.id.viewProfile);
-            viewProfile.setVisible(true);
+        Menu m = MainActivity.getOptionsMenu();
+        if (m != null) {
+            editProfile = m.findItem(R.id.editProfile);
+            editProfile.setVisible(false);
         }
 
-        //Set title bar
-        //((MainActivity) getActivity()).setActionBarTitle(mToUser);
+        if (userType == BUSINESS){
+            if(m != null) {
+                viewProfile = m.findItem(R.id.viewProfile);
+                viewProfile.setVisible(true);
+            }
+        }
 
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
         mMessageView.setLayoutManager(linearLayoutManager);
@@ -403,7 +433,9 @@ public class ChatFragment extends Fragment {
                     }
                     mNavigationView.setVisibility(View.VISIBLE);
 //                    getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-                    mSocket.emit("leave room", createBaseJSONObject());
+                    //mSocket.emit("leave room", createBaseJSONObject());
+                    //((MainActivity)getActivity()).setActionBarTitle("CHATBIZ");
+                    ((MainActivity)getActivity()).setActionBarSubTitle(null);
                     return true;
                 }
                 return false;
@@ -491,8 +523,7 @@ public class ChatFragment extends Fragment {
                     try {
                         String toUser = data.getString("person2");
                         if(toUser.equals(mToUser)) {
-                            mStatus.setVisibility(View.VISIBLE);
-                            mStatus.setText("Typing...");
+                            ((MainActivity)getActivity()).setActionBarSubTitle("Typing...");
                         }
                     }catch (JSONException e){
                         Log.e(TAG, "OnTyping: person1 not found ", e);
@@ -508,8 +539,7 @@ public class ChatFragment extends Fragment {
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    mStatus.setText("");
-                    mStatus.setVisibility(View.GONE);
+                    ((MainActivity)getActivity()).setActionBarSubTitle("online");
                 }
             });
         }
@@ -568,18 +598,38 @@ public class ChatFragment extends Fragment {
         }
     };
 
-//    Emitter.Listener OnGetUserType = new Emitter.Listener() {
-//        @Override
-//        public void call(final Object... args) {
-//            getActivity().runOnUiThread(new Runnable() {
-//                @Override
-//                public void run() {
-//                    int userType = (int) args[0];
-//                    Log.i(TAG, "run: "+ userType);
-//                }
-//            });
-//        }
-//    };
+Emitter.Listener OnOffline = new Emitter.Listener() {
+    @Override
+    public void call(Object... args) {
+        if (getActivity() == null){
+            return;
+        }
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ((MainActivity)getActivity()).setActionBarSubTitle(null);
+            }
+        });
+    }
+};
+
+    private Emitter.Listener UpdateOnlineStatus = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            if(getActivity() == null){
+                return;
+            }
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    isOtherUserOnline = (Boolean)args[0];
+                    if (isOtherUserOnline){
+                        ((MainActivity)getActivity()).setActionBarSubTitle("online");
+                    }
+                }
+            });
+        }
+    };
 
     private Runnable OnTypingTimeout = new Runnable() {
         @Override

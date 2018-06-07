@@ -31,6 +31,8 @@ public class MainActivity extends AppCompatActivity {
     private BottomNavigationView mNavigation;
     private FragmentTransaction transaction;
     private ProgressBar mLoadingView;
+
+
     private AlertDialog alertDialog;
     private static Menu mMenu;
     private Socket mSocket;
@@ -96,14 +98,31 @@ public class MainActivity extends AppCompatActivity {
         } else {
             buildDialog(MainActivity.this).show();
         }
+        startService(new Intent(getBaseContext(), OnClearFromRecentService.class));
     }
+
 
     @Override
     protected void onResume(){
         //mNavigation.setVisibility(View.VISIBLE);
         //mLoadingView.setVisibility(View.GONE);
         //mNavigation.setSelectedItemId(R.id.navigation_recent_chats);
+        mSocket.emit("online", app.getCurrentUser().getPhoneNumber());
         super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        mSocket.emit("offline", app.getCurrentUser().getPhoneNumber());
+        super.onPause();
+    }
+
+
+    @Override
+    protected void onDestroy() {
+        mSocket.off("get user type", OnGetCurrentUserType);
+
+        super.onDestroy();
     }
 
     public AlertDialog buildDialog(Context c) {
@@ -160,7 +179,7 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             case  R.id.viewProfile:
                 intent = new Intent(this, ViewProfileActivity.class);
-                startActivity(intent);
+                startActivityForResult(intent, 0);
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -185,7 +204,7 @@ public class MainActivity extends AppCompatActivity {
 
                     android.support.v4.app.FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
                     transaction.replace(R.id.list, recentChatFragment).addToBackStack(null);
-                    transaction.commit();
+                    transaction.commitAllowingStateLoss();
 
                     if (userType == CUSTOMER) {
                         mNavigation.getMenu().removeItem(R.id.navigation_products);
@@ -249,9 +268,18 @@ public class MainActivity extends AppCompatActivity {
                         });
                         box.show();
                     }
+                    mSocket.off("send business details", OnBusinessDetail);
                 }
             });
         }
     };
+
+    public void setActionBarTitle(String title) {
+        getSupportActionBar().setTitle(title);
+    }
+    public void setActionBarSubTitle(String toDisplay ) {
+        getSupportActionBar().setSubtitle(toDisplay);
+
+    }
 
 }

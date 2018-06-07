@@ -82,6 +82,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
                 Bundle b = new Bundle();
                 b.putString("toUser", user.getPhone());
                 b.putInt("user type", user.getUserType());
+                b.putString("username", user.getUsername());
                 chatFragment.setArguments(b);
                 joinRoom(user.getPhone());
 

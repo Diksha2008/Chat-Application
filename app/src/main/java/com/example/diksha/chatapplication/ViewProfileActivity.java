@@ -13,6 +13,8 @@ import org.json.JSONObject;
 
 public class ViewProfileActivity extends AppCompatActivity {
 
+    private Socket mSocket;
+
     private static final String TAG = "ViewProfileActivity";
     TextView phoneView;
     TextView nameView;
@@ -20,6 +22,7 @@ public class ViewProfileActivity extends AppCompatActivity {
     TextView addressView;
     TextView typeView;
     TextView timeView;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,11 +37,17 @@ public class ViewProfileActivity extends AppCompatActivity {
         timeView = (TextView) findViewById(R.id.business_hours);
 
         final ChatApplication app = (ChatApplication) getApplication();
-        final Socket mSocket = app.getSocket();
+        mSocket = app.getSocket();
 
         mSocket.on("send business details", BusinessDetails);
         mSocket.emit("get business details", ChatFragment.getToUser());
 
+    }
+
+    @Override
+    protected void onDestroy() {
+        mSocket.off("send business details", BusinessDetails);
+        super.onDestroy();
     }
 
     Emitter.Listener BusinessDetails = new Emitter.Listener() {
