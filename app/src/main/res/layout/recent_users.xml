@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="70sp"
+    android:orientation="horizontal"
+    android:id="@+id/user"
+    android:background="?attr/selectableItemBackground"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:clickable="true">
+
+
+    <LinearLayout
+        android:id="@+id/item"
+        android:layout_width="match_parent"
+        android:layout_height="70sp"
+        android:layout_centerInParent="true"
+        android:layout_alignParentLeft="true"
+        android:orientation="horizontal">
+        <TextView
+            android:id="@+id/username"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            tools:text="Diksha"
+            android:textColor="@android:color/black"
+            android:layout_marginLeft="16dp"
+            android:textSize="24sp"
+            android:gravity="center" />
+            <ImageView
+                android:id="@+id/label"
+                android:gravity="center"
+                android:src="@drawable/labelshape"
+                android:layout_width="30sp"
+                android:layout_height="30sp"
+                android:layout_marginTop="25sp"
+                android:layout_marginBottom="25sp"
+                android:layout_marginLeft="10sp"/>
+    </LinearLayout>
+        <TextView
+            android:id="@+id/unread"
+            android:layout_width="24sp"
+            android:layout_alignParentRight="true"
+            android:layout_height="24sp"
+            android:layout_gravity="center"
+            android:background="@drawable/circle"
+            android:gravity="center"
+            android:layout_marginLeft="8sp"
+            android:layout_marginBottom="5sp"
+            android:layout_alignParentBottom="true"
+            android:shadowColor="@android:color/black"
+            android:shadowRadius="10.0"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            android:layout_margin="16dp"/>
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="1dp"
+        android:layout_alignBottom="@+id/item"
+        android:background="#D3D3D3" />
+    </RelativeLayout>
+
+
+

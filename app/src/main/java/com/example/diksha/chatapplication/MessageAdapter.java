@@ -33,18 +33,21 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
 
     private RelativeLayout.LayoutParams messageParams;
     private RelativeLayout.LayoutParams timeViewParams;
+    private RelativeLayout.LayoutParams deliveryViewParams;
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         // each data item is just a string in this case
         public TextView mTextView;
         public ImageView mImageView;
         public TextView mTimeView;
+        public ImageView mDeliverView;
 
         public ViewHolder(View v) {
             super(v);
             mTextView = v.findViewById(R.id.msg);
             mImageView = v.findViewById(R.id.image);
             mTimeView = v.findViewById(R.id.time);
+            mDeliverView = v.findViewById(R.id.deltick);
         }
     }
 
@@ -64,9 +67,11 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
 
-        messageParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        messageParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
 
-        timeViewParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        timeViewParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+
+        deliveryViewParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
 
         final Message message = mMessages.get(position);
 
@@ -88,10 +93,13 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
 
             //aligning the message
             if(!message.isReceived()){
+                holder.mDeliverView.setVisibility(View.VISIBLE);
+                alignDeliveryView(holder.mDeliverView,RelativeLayout.LEFT_OF, R.id.msg, message.getIsDelivered());
                 alignTimeView(holder.mTimeView,RelativeLayout.LEFT_OF, R.id.image);
                 alignMessageView(holder.mImageView, false, R.drawable.rounded_blue_rectangle, RelativeLayout.ALIGN_PARENT_RIGHT, Color.WHITE);
             }
             else {
+                holder.mDeliverView.setVisibility(View.GONE);
                 alignTimeView(holder.mTimeView, RelativeLayout.RIGHT_OF, R.id.image);
                 alignMessageView(holder.mImageView, false, R.drawable.rounded_grey_rectangle, RelativeLayout.ALIGN_PARENT_LEFT, Color.BLACK);
             }
@@ -114,10 +122,13 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
 
             // aligning the message
             if(!message.isReceived()){
+                holder.mDeliverView.setVisibility(View.VISIBLE);
+                alignDeliveryView(holder.mDeliverView, RelativeLayout.LEFT_OF, R.id.msg, message.getIsDelivered());
                 alignTimeView(holder.mTimeView,RelativeLayout.LEFT_OF, R.id.msg);
                 alignMessageView(holder.mTextView, true, R.drawable.rounded_blue_rectangle, RelativeLayout.ALIGN_PARENT_RIGHT, Color.WHITE);
             }
             else {
+                holder.mDeliverView.setVisibility(View.GONE);
                 alignTimeView(holder.mTimeView, RelativeLayout.RIGHT_OF, R.id.msg);
                 alignMessageView(holder.mTextView, true, R.drawable.rounded_grey_rectangle, RelativeLayout.ALIGN_PARENT_LEFT, Color.BLACK);
             }
@@ -138,6 +149,19 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
         if(isText) {
             ((TextView)messageView).setTextColor(textColor);
         }
+    }
+
+    public void alignDeliveryView(ImageView deliveryView, int alignment,int id, Boolean isDelivered){
+        if (isDelivered){
+            deliveryView.setImageResource(R.drawable.deldtick);
+        }
+        else {
+            deliveryView.setImageResource(R.drawable.deltick);
+        }
+        deliveryViewParams.addRule(alignment, id);
+        deliveryViewParams.addRule(RelativeLayout.ALIGN_TOP, id);
+        deliveryView.setLayoutParams(deliveryViewParams);
+
     }
 
 

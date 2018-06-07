@@ -8,6 +8,16 @@ public class User {
     private String mPhone;
     private String mUsername;
     private int mUserType;
+    private int mUnreadMsg;
+    private String mColor;
+
+    public User(String phone, String username,String color, int unread, int userType) {
+        mPhone = phone;
+        mUsername=username;
+        mUnreadMsg = unread;
+        mColor = color;
+        mUserType = userType;
+    }
 
     public User(String phone, String username){
         mPhone = phone;
@@ -29,5 +39,12 @@ public class User {
 
     public int getUserType() {
         return mUserType;
+    }
+
+    public int getUnreadMsg() {
+        return mUnreadMsg;
+    }
+    public String getColor() {
+        return mColor;
     }
 }

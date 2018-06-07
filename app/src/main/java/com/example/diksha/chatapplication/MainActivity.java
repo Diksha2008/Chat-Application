@@ -27,7 +27,7 @@ import org.json.JSONObject;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
-    private int userType;
+    private static int userType;
     private BottomNavigationView mNavigation;
     private FragmentTransaction transaction;
     private ProgressBar mLoadingView;
@@ -89,7 +89,6 @@ public class MainActivity extends AppCompatActivity {
         mNavigation = (BottomNavigationView) findViewById(R.id.navigation);
         mLoadingView = (ProgressBar) findViewById(R.id.loadApp);
 
-
         ConnectivityManager cm = (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
 
@@ -107,6 +106,10 @@ public class MainActivity extends AppCompatActivity {
         //mNavigation.setVisibility(View.VISIBLE);
         //mLoadingView.setVisibility(View.GONE);
         //mNavigation.setSelectedItemId(R.id.navigation_recent_chats);
+        if (userType == BUSINESS) {
+            MenuItem item = mMenu.findItem(R.id.editProfile);
+            item.setVisible(false);
+        }
         mSocket.emit("online", app.getCurrentUser().getPhoneNumber());
         super.onResume();
     }
@@ -189,6 +192,10 @@ public class MainActivity extends AppCompatActivity {
         return mMenu;
     }
 
+    public static int getUserType(){
+        return userType;
+    }
+
     private Emitter.Listener OnGetCurrentUserType = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
@@ -214,6 +221,8 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                     if (userType == BUSINESS){
+                        MenuItem item = mMenu.findItem(R.id.editProfile);
+                        item.setVisible(true);
                         mSocket.emit("get business details", app.getCurrentUser().getPhoneNumber());
                     }
                     mNavigation.setVisibility(View.VISIBLE);

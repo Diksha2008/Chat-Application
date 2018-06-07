@@ -34,7 +34,6 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
     private List<User> mUsers;
     private Activity mActivity;
     private static final int BUSINESS = 1;
-    private static final int CUSTOMER = 0;
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public LinearLayout mUserView;

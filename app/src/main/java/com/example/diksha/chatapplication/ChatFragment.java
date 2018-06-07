@@ -110,6 +110,7 @@ public class ChatFragment extends Fragment {
         mSocket.on("stop typing", OnStopTyping);
         mSocket.on("get messages", OnGetMessages);
         mSocket.on("offline", OnOffline);
+        mSocket.on("online result",UpdateOnlineStatus);
 
        // mSocket.on("get user type", OnGetUserType);
     }
@@ -135,7 +136,6 @@ public class ChatFragment extends Fragment {
         JSONObject data=createBaseJSONObject();
         mSocket.emit("update delivery status",data);
         mSocket.emit("check online presence",mToUser);
-        mSocket.on("online result",UpdateOnlineStatus);
     }
 
 
@@ -184,6 +184,7 @@ public class ChatFragment extends Fragment {
         userType = getArguments().getInt("user type");
 
         String username = getArguments().getString("username");
+        Log.i(TAG, "onViewCreated: " + username);
         ((MainActivity)getActivity()).setActionBarTitle(username);
 
         Menu m = MainActivity.getOptionsMenu();
@@ -242,7 +243,7 @@ public class ChatFragment extends Fragment {
                 String message = mEditText.getText().toString().trim();
                 String time = getCurrentTime();
                 Log.d(TAG, "onClick: " + time);
-                insertMessage(message, false, time);
+                //insertMessage(message, false, time);
                 mEditText.setText("");
                 JSONObject messageData = createBaseJSONObject();
                 try {
@@ -251,6 +252,10 @@ public class ChatFragment extends Fragment {
                 } catch (JSONException e) {
                 }
                 mSocket.emit("new message", messageData);
+                if( isOtherUserOnline )
+                    insertMessage(message, false, time,true);
+                else
+                    insertMessage(message, false, time,false);
             }
         });
 
@@ -283,7 +288,12 @@ public class ChatFragment extends Fragment {
                 mSocket.emit("image", sendImage);
             } catch (JSONException e) {
             }
-            insertImage(selectedImageUri, false, time);
+            if (isOtherUserOnline) {
+                insertImage(selectedImageUri, false, time, true);
+            }
+            else {
+                insertImage(selectedImageUri, false, time, false);
+            }
         } else {
             Log.e(TAG, "onActivityResult: ", new Exception());
         }
@@ -309,14 +319,14 @@ public class ChatFragment extends Fragment {
         return BitmapFactory.decodeByteArray(b, 0, b.length);
     }
 
-    private void insertMessage(String message, Boolean isReceived, String time) {
-        mMessages.add(new Message(message, null, isReceived, time));
+    private void insertMessage(String message, Boolean isReceived, String time, Boolean isDelivered) {
+        mMessages.add(new Message(message, null, isReceived, time, isDelivered));
         mAdapter.notifyItemInserted(mMessages.size() - 1);
         scrollToBottom();
     }
 
-    private void insertImage(Uri image, Boolean isReceived, String time) {
-        mMessages.add(new Message(null, image, isReceived, time));
+    private void insertImage(Uri image, Boolean isReceived, String time, Boolean isDelivered) {
+        mMessages.add(new Message(null, image, isReceived, time, isDelivered));
         mAdapter.notifyItemInserted(mMessages.size() - 1);
         scrollToBottom();
     }
@@ -405,7 +415,6 @@ public class ChatFragment extends Fragment {
     }
 
     public void loadNextData(int offset) {
-//        mLoading.setVisibility(View.VISIBLE);
         JSONObject data = createBaseJSONObject();
         try {
             data.put("offset", offset);
@@ -434,7 +443,7 @@ public class ChatFragment extends Fragment {
                     mNavigationView.setVisibility(View.VISIBLE);
 //                    getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
                     //mSocket.emit("leave room", createBaseJSONObject());
-                    //((MainActivity)getActivity()).setActionBarTitle("CHATBIZ");
+                    ((MainActivity)getActivity()).setActionBarTitle("CHATBIZ");
                     ((MainActivity)getActivity()).setActionBarSubTitle(null);
                     return true;
                 }
@@ -472,9 +481,13 @@ public class ChatFragment extends Fragment {
                         String time = message.getString("time");
                         String person = message.getString("person1");
                         if (person.equals(mCurrentUser.getPhoneNumber())) {
-                            insertMessage(messageText, true, time);
+                            insertMessage(messageText, true, time, false);
                         } else {
-                            insertMessage(messageText, false, time);
+                            if( isOtherUserOnline )
+                                insertMessage(messageText, false, time,true);
+                            else
+                                insertMessage(messageText, false, time,false);
+//                            insertMessage(messageText, false, time, isOtherUserOnline);
                         }
 
                     } catch (JSONException e) {
@@ -501,10 +514,11 @@ public class ChatFragment extends Fragment {
                         String time = image.getString("time");
                         String person = image.getString("person1");
                         if (person.equals(mCurrentUser.getPhoneNumber())) {
-                            insertImage(uri, true, time);
+                            insertImage(uri, true, time, false);
                         } else {
-                            insertImage(uri, false, time);
+                            insertImage(uri, false, time, true);
                         }
+
                     } catch (JSONException e) {
                     }
                 }
@@ -566,20 +580,21 @@ public class ChatFragment extends Fragment {
                             time = time.replaceAll("[TZ]", " ");
                             String person = message.getString("toId");
                             String messageText = message.getString("messageText");
+                            Boolean isDelivered = message.getBoolean("is_delivered");
                             if (messageText.equals("null")) {
                                 String selectedImage = message.getString("image");
                                 Bitmap bitmap = decodeImage(selectedImage);
                                 Uri uri = saveImage(bitmap);
                                 if (person.equals(mCurrentUser.getPhoneNumber())) {
-                                    mMessages.add(0, new Message(null, uri, true, time));
+                                    mMessages.add(0, new Message(null, uri, true, time, isDelivered));
                                 } else {
-                                    mMessages.add(0, new Message(null, uri, false, time));
+                                    mMessages.add(0, new Message(null, uri, false, time, isDelivered));
                                 }
                             } else {
                                 if (person.equals(mCurrentUser.getPhoneNumber())) {
-                                    mMessages.add(0, new Message(messageText, null, true, time));
+                                    mMessages.add(0, new Message(messageText, null, true, time, isDelivered));
                                 } else {
-                                    mMessages.add(0, new Message(messageText, null, false, time));
+                                    mMessages.add(0, new Message(messageText, null, false, time, isDelivered));
                                 }
 
                             }

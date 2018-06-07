@@ -26,6 +26,14 @@
         android:src="@drawable/acms"
         android:visibility="gone" />
 
+    <ImageView
+        android:id="@+id/deltick"
+        android:src="@drawable/deltick"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_alignBottom="@id/msg"/>
+
     <TextView
         android:id="@+id/time"
         android:layout_width="wrap_content"
